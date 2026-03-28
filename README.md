@@ -1,0 +1,2 @@
+# MandviCart-MultiVendorGrocceries store
+
