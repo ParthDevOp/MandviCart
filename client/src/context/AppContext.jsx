@@ -9,8 +9,7 @@ export const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
     const currency = "₹";
     const navigate = useNavigate();
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-
+const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://mandvicart-backend.onrender.com";
     const { isSignedIn, user: clerkUser, isLoaded: clerkLoaded } = useUser();
     const { signOut: clerkSignOut } = useClerk();
 
