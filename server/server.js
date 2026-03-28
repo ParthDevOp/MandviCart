@@ -39,9 +39,15 @@ import { checkMaintenance } from "./middlewares/authRole.js";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// 🟢 NEW: Create HTTP Server and bind Socket.io to it
+// 🟢 Create HTTP Server and bind Socket.io to it
 const httpServer = createServer(app);
-const allowedOrigins = ["http://localhost:5173", process.env.FRONTEND_URL].filter(Boolean);
+
+// 🟢 FIX: Added your Vercel frontend URL to the allowed origins!
+const allowedOrigins = [
+  "http://localhost:5173", 
+  "https://mandvi-cart.vercel.app", 
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 const io = new Server(httpServer, {
   cors: {
