@@ -130,34 +130,7 @@ const ContentManagement = () => {
                 </div>
 
                 {/* Right Column: Active Banners */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                        <h3 className="font-bold text-slate-800 text-lg mb-6 flex items-center gap-2">
-                            Live Banners <span className="bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full">{banners.length}</span>
-                        </h3>
-                        {banners.length === 0 ? (
-                            <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                <ImageIcon size={40} className="mx-auto text-slate-300 mb-3"/>
-                                <p className="text-slate-500 font-bold text-sm">No banners active.</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-5">
-                                {banners.map((b) => (
-                                    <div key={b._id} className="relative h-48 rounded-2xl overflow-hidden shadow-sm border border-slate-100 flex items-center transition-transform hover:shadow-md group" style={{backgroundColor: b.bgColor}}>
-                                        <div className="p-8 flex-1 z-10 relative">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-white/60 to-transparent -z-10"></div>
-                                            <span className="bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest text-slate-700 mb-3 inline-block border border-white">Live Preview</span>
-                                            <h4 className="font-black text-2xl text-slate-900 leading-tight mb-1">{b.title}</h4>
-                                            <p className="text-slate-700 font-bold text-sm bg-white/40 w-fit px-2 py-0.5 rounded">{b.subtitle}</p>
-                                        </div>
-                                        <img src={b.image} className="h-full w-1/2 object-contain absolute right-4 bottom-0 drop-shadow-xl group-hover:scale-105 transition-transform duration-500" alt="" />
-                                        <button onClick={()=>handleDeleteBanner(b._id)} className="absolute top-4 right-4 bg-white/80 backdrop-blur-md p-2 rounded-lg text-slate-400 hover:bg-red-500 hover:text-white hover:border-red-500 border border-slate-200 shadow-sm transition-all z-20 flex items-center justify-center"><Trash2 size={16} /></button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
+                
             </motion.div>
         </div>
     );
