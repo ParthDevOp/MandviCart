@@ -1,20 +1,32 @@
-import React, { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { assets } from "../../assets/assets";
 import { useAppContext } from "../../context/AppContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
     LayoutDashboard, ShoppingBag, Package, Truck, LogOut, Store, 
-    MessageCircle, Layout, Users, Bike, UserCheck, Menu, X
+    MessageCircle, Layout, Users, Bike, UserCheck, Menu, X, ArrowLeft
 } from 'lucide-react';
 
 const AdminLayout = () => {
     const { axios, navigate, setUser, setRole } = useAppContext();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const location = useLocation();
+
+    // Close mobile menu automatically when a route changes
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [location]);
 
     const logout = async () => {
-        await axios.post('/api/user/logout');
-        setUser(null); setRole(null); navigate('/');
+        try {
+            await axios.post('/api/user/logout');
+            setUser(null); 
+            setRole('user'); 
+            navigate('/home');
+        } catch (error) {
+            console.error("Logout failed", error);
+        }
     };
 
     const sidebarLinks = [
@@ -32,91 +44,93 @@ const AdminLayout = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row font-outfit">
-            {/* Hamburger Button - Mobile Only */}
-            <div className="lg:hidden flex items-center justify-between bg-white border-b border-gray-200 p-4">
-                <img src={assets.logo} alt="GreenCart" className="w-24" />
-                <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                    {sidebarOpen ? (
-                        <X size={24} className="text-gray-600" />
-                    ) : (
-                        <Menu size={24} className="text-gray-600" />
-                    )}
-                </button>
-            </div>
-
-            {/* Overlay for mobile */}
+        <div className="flex h-screen bg-slate-50 font-outfit overflow-hidden">
+            
+            {/* 🟢 MOBILE OVERLAY */}
             <AnimatePresence>
                 {sidebarOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                    <motion.div 
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" 
                         onClick={() => setSidebarOpen(false)}
-                        className="lg:hidden fixed inset-0 bg-black/40 z-30"
                     />
                 )}
             </AnimatePresence>
 
-            {/* Sidebar */}
-            <AnimatePresence>
-                <motion.div
-                    initial={false}
-                    animate={{ x: sidebarOpen ? 0 : "-100%" }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="fixed lg:static lg:translate-x-0 z-40 left-0 top-0 w-64 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 lg:min-h-screen flex flex-col h-screen lg:h-auto"
-                >
-                    {/* Logo Section */}
-                    <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col gap-2">
-                        <img src={assets.logo} alt="GreenCart" className="w-24 sm:w-32" />
-                        <div className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-bold tracking-wider flex items-center gap-1 w-fit">
-                            <UserCheck size={12} /> ADMIN PANEL
-                        </div>
-                    </div>
-
-                    {/* Navigation Links */}
-                    <nav className="flex-1 p-3 sm:p-4 space-y-1">
-                        {sidebarLinks.map((item) => (
-                            <NavLink 
-                                key={item.name} 
-                                to={item.path}
-                                onClick={() => setSidebarOpen(false)}
-                                className={({ isActive }) => `flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all font-medium text-xs sm:text-sm ${isActive ? 'bg-green-600 text-white shadow-lg shadow-green-200' : 'text-gray-500 hover:bg-gray-50'}`}
-                            >
-                                <item.icon size={18} className="sm:w-5 sm:h-5 flex-shrink-0" /> 
-                                <span>{item.name}</span>
-                            </NavLink>
-                        ))}
-                    </nav>
-
-                    {/* Logout Button */}
-                    <div className="p-3 sm:p-4 border-t border-gray-100">
-                        <button 
-                            onClick={logout} 
-                            className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors text-xs sm:text-sm font-medium"
-                        >
-                            <LogOut size={18} className="flex-shrink-0" /> 
-                            <span>Logout</span>
+            {/* 🟢 SIDEBAR (Desktop Fixed + Mobile Slide-out) */}
+            <div className={`fixed lg:relative top-0 left-0 w-[280px] h-full bg-white border-r border-slate-200 flex flex-col shadow-2xl lg:shadow-none z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                
+                {/* Sidebar Header */}
+                <div className="p-6 border-b border-slate-100 flex flex-col gap-3 shrink-0">
+                    <div className="flex items-center justify-between">
+                        <img src={assets.logo} alt="MandviCart" className="w-32 object-contain" />
+                        <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-slate-800 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
+                            <X size={16} />
                         </button>
                     </div>
-                </motion.div>
-            </AnimatePresence>
+                    <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-fit border border-emerald-100/50">
+                        <UserCheck size={12} strokeWidth={3}/>  Admin Panel
+                    </div>
+                </div>
 
-            {/* Main Content */}
-            <div className="flex-1 overflow-y-auto flex flex-col w-full">
-                <div className="p-4 sm:p-6 md:p-8 flex-1">
+                {/* Navigation Links */}
+                <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-3">Management</p>
+                    {sidebarLinks.map((item) => (
+                        <NavLink 
+                            key={item.name} 
+                            to={item.path}
+                            className={({ isActive }) => `group flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm
+                            ${isActive ? 'bg-emerald-600 text-white shadow-[0_4px_20px_-5px_rgba(16,185,129,0.5)]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}
+                        >
+                            {({ isActive }) => (
+                                <>
+                                    <item.icon size={18} className={`transition-transform duration-300 ${isActive ? 'scale-110 text-white' : 'group-hover:scale-110 group-hover:text-emerald-500'}`} /> 
+                                    {item.name}
+                                </>
+                            )}
+                        </NavLink>
+                    ))}
+                </nav>
+
+                {/* Sidebar Footer Actions */}
+                <div className="p-4 border-t border-slate-100 space-y-2 bg-slate-50 shrink-0">
+                    <button onClick={() => navigate('/home')} className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-500 hover:bg-white border border-transparent hover:border-slate-200 hover:text-slate-800 transition-all shadow-sm text-sm font-bold group">
+                        <span className="flex items-center gap-2"><Store size={16} className="text-slate-400 group-hover:text-emerald-500 transition-colors"/> View Storefront</span>
+                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform"/>
+                    </button>
+                    <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors text-sm font-bold">
+                        <LogOut size={18} /> Logout Account
+                    </button>
+                </div>
+            </div>
+
+            {/* 🟢 MAIN CONTENT AREA */}
+            <div className="flex-1 flex flex-col min-w-0 relative">
+                
+                {/* Mobile Topbar */}
+                <header className="lg:hidden h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 z-10 shrink-0 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => setSidebarOpen(true)} className="p-2 bg-slate-50 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors border border-slate-200">
+                            <Menu size={20} />
+                        </button>
+                        <span className="text-sm font-black text-slate-800 uppercase tracking-widest">Admin Portal</span>
+                    </div>
+                </header>
+
+                {/* Scrollable Outlet Content */}
+                <main className="flex-1 overflow-y-auto p-4 md:p-8 relative z-0 custom-scrollbar">
                     <motion.div 
-                        initial={{ opacity: 0, y: 10 }} 
-                        animate={{ opacity: 1, y: 0 }}
-                        className="w-full"
+                        initial={{ opacity: 0, y: 15 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        transition={{ duration: 0.3 }}
+                        className="w-full max-w-[1600px] mx-auto"
                     >
                         <Outlet />
                     </motion.div>
-                </div>
+                </main>
             </div>
+
         </div>
     );
 };

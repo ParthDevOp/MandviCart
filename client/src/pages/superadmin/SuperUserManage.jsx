@@ -75,14 +75,12 @@ const SuperUserManage = () => {
         } catch (error) { toast.error("Update failed", { id: loadToast }); }
     };
 
-    // 🟢 FIXED: Bulletproof Role Promotion/Demotion targeting the correct route
     const handleRoleChange = async (e) => {
         e.preventDefault();
         if (newRole === selectedUser.role) return toast.error("User already has this role.");
         
         const loadToast = toast.loading(`Updating access level to ${newRole.toUpperCase()}...`);
         try {
-            // 🟢 Send both payload variations to the primary update route
             const payload = { 
                 userId: selectedUser._id, 
                 role: newRole, 
@@ -116,31 +114,33 @@ const SuperUserManage = () => {
     const bannedCount = users.filter(u => u.isBlocked).length;
 
     return (
-        <div className="space-y-6 pb-20 font-outfit max-w-[1400px] mx-auto">
+        // 🟢 CRITICAL FIX: Changed from max-w to w-full min-w-0 to prevent layout blowouts
+        <div className="space-y-6 pb-12 w-full min-w-0 font-outfit">
             
             {/* 🟢 HEADER & METRICS */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 sticky top-4 z-30">
+            {/* 🟢 CRITICAL FIX: Removed sticky top to prevent clashing with SuperLayout topbar */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200/60 w-full">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    <h1 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                         <Users size={24} className="text-indigo-600"/> Network User Management
                     </h1>
                     <p className="text-xs text-slate-500 mt-1 font-bold uppercase tracking-widest">Review, promote, and enforce security policies</p>
                 </div>
                 
-                <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                <div className="flex flex-col xl:flex-row items-center gap-4 w-full lg:w-auto">
                     {/* Role Tabs */}
-                    <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-200 w-full md:w-auto overflow-x-auto hide-scrollbar shadow-sm">
+                    <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-200 w-full xl:w-auto overflow-x-auto custom-scrollbar shadow-sm shrink-0">
                         {['user', 'seller', 'rider'].map(r => (
                             <button 
                                 key={r} onClick={() => { setRoleTab(r); setSearch(''); }} 
-                                className={`flex-1 md:flex-none capitalize px-6 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 ${roleTab === r ? 'bg-white text-indigo-700 shadow border border-slate-100' : 'text-slate-500 hover:text-slate-800'}`}
+                                className={`whitespace-nowrap flex-1 xl:flex-none capitalize px-6 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 ${roleTab === r ? 'bg-white text-indigo-700 shadow border border-slate-100' : 'text-slate-500 hover:text-slate-800'}`}
                             >
                                 {r}s
                             </button>
                         ))}
                     </div>
 
-                    <div className="bg-slate-50 border border-slate-200 px-6 py-2.5 rounded-xl flex gap-6 w-full md:w-auto justify-center shadow-sm">
+                    <div className="bg-slate-50 border border-slate-200 px-6 py-2.5 rounded-xl flex justify-between gap-6 w-full xl:w-auto shadow-sm shrink-0">
                         <div className="text-center"><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</p><p className="text-base font-black text-slate-800">{users.length}</p></div>
                         <div className="w-px bg-slate-200"></div>
                         <div className="text-center"><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active</p><p className="text-base font-black text-emerald-600">{activeCount}</p></div>
@@ -151,7 +151,7 @@ const SuperUserManage = () => {
             </div>
 
             {/* 🟢 INFO BANNER */}
-            <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start sm:items-center gap-3 text-blue-800 text-xs font-medium shadow-sm">
+            <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start sm:items-center gap-3 text-blue-800 text-xs font-medium shadow-sm w-full">
                 <Info size={18} className="text-blue-600 shrink-0 mt-0.5 sm:mt-0"/>
                 <p className="leading-relaxed"><strong>Clerk Auth Sync Active:</strong> New users must register via the public portal. Use the <b className="text-blue-900 font-bold">Modify Access Level</b> action to promote existing users to Sellers, Riders, or Admins.</p>
             </div>
@@ -164,15 +164,16 @@ const SuperUserManage = () => {
                     placeholder={`Search ${roleTab}s by name or email address...`} 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm font-medium text-slate-800"
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200/60 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm font-medium text-slate-800"
                 />
             </div>
 
             {/* 🟢 ENTERPRISE DATA TABLE */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden w-full">
+                {/* 🟢 CRITICAL FIX: custom-scrollbar on the table wrapper forces internal scrolling */}
+                <div className="w-full overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[900px]">
-                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest font-black">
+                        <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-500 text-[10px] uppercase tracking-widest font-black">
                             <tr>
                                 <th className="p-5">Identity Record</th>
                                 <th className="p-5">Role-Specific Data</th>
@@ -204,7 +205,7 @@ const SuperUserManage = () => {
                                         </div>
                                     </td>
                                     
-                                    <td className="p-5">
+                                    <td className="p-5 align-middle">
                                         {u.role === 'seller' && (
                                             <div>
                                                 <p className="text-sm font-bold text-slate-800 flex items-center gap-1.5"><Store size={14} className="text-amber-500"/> {u.shopName || 'Not Set'}</p>
@@ -218,30 +219,30 @@ const SuperUserManage = () => {
                                             </div>
                                         )}
                                         {u.role === 'user' && (
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest px-2 py-1 bg-slate-50 border border-slate-100 rounded">Standard Consumer</span>
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-md">Standard Consumer</span>
                                         )}
                                     </td>
 
-                                    <td className="p-5">
-                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[10px] font-black uppercase tracking-wider ${u.isBlocked ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                                    <td className="p-5 align-middle">
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[10px] font-black uppercase tracking-wider ${u.isBlocked ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
                                             {u.isBlocked ? <AlertTriangle size={10}/> : <Activity size={10}/>}
                                             {u.isBlocked ? 'Suspended' : 'Active'}
                                         </span>
                                     </td>
 
-                                    <td className="p-5">
+                                    <td className="p-5 align-middle">
                                         <div className="flex flex-col">
                                             <span className="text-xs font-bold text-slate-700">{new Date(u.createdAt || Date.now()).toLocaleDateString()}</span>
                                             <span className="text-[9px] text-slate-400 flex items-center gap-1 mt-1 font-bold uppercase tracking-wider"><Calendar size={10}/> Joined</span>
                                         </div>
                                     </td>
 
-                                    <td className="p-5 text-right">
-                                        <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            
+                                    <td className="p-5 text-right align-middle">
+                                        {/* 🟢 CRITICAL FIX: Removed opacity-0 hide, so mobile users can always see action buttons without hovering */}
+                                        <div className="flex items-center justify-center gap-2 transition-opacity">
                                             <button 
                                                 onClick={() => { setSelectedUser(u); setNewRole(u.role); setShowRoleModal(true); }} 
-                                                className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 rounded-lg transition-colors shadow-sm" 
+                                                className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 rounded-lg transition-colors shadow-sm active:scale-95" 
                                                 title="Modify Access Level"
                                             >
                                                 <UserCog size={16}/>
@@ -249,7 +250,7 @@ const SuperUserManage = () => {
 
                                             <button 
                                                 onClick={() => { setSelectedUser(u); setShowPassModal(true); }} 
-                                                className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-lg transition-colors shadow-sm" 
+                                                className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-lg transition-colors shadow-sm active:scale-95" 
                                                 title="Force Credentials Reset"
                                             >
                                                 <Key size={16}/>
@@ -257,7 +258,7 @@ const SuperUserManage = () => {
                                             
                                             <button 
                                                 onClick={() => handleBan(u._id, u.isBlocked)} 
-                                                className={`p-2 bg-white border border-slate-200 rounded-lg transition-colors shadow-sm ${u.isBlocked ? 'text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50' : 'text-orange-500 hover:border-orange-200 hover:bg-orange-50'}`}
+                                                className={`p-2 bg-white border border-slate-200 rounded-lg transition-colors shadow-sm active:scale-95 ${u.isBlocked ? 'text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50' : 'text-orange-500 hover:border-orange-200 hover:bg-orange-50'}`}
                                                 title={u.isBlocked ? "Restore Access" : "Suspend Access"}
                                             >
                                                 <ShieldBan size={16}/>
@@ -265,7 +266,7 @@ const SuperUserManage = () => {
                                             
                                             <button 
                                                 onClick={() => handleDelete(u._id)} 
-                                                className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-lg transition-colors shadow-sm" 
+                                                className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 rounded-lg transition-colors shadow-sm active:scale-95" 
                                                 title="Terminate Database Record"
                                             >
                                                 <Trash2 size={16}/>
@@ -324,7 +325,7 @@ const SuperUserManage = () => {
             </AnimatePresence>
 
             {/* ==========================================
-                🟢 RESET PASSWORD MODAL (Clerk Auth override)
+                🟢 RESET PASSWORD MODAL
                 ========================================== */}
             <AnimatePresence>
                 {showPassModal && selectedUser && (
