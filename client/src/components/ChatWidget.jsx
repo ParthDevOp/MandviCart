@@ -54,6 +54,19 @@ const ChatWidget = () => {
         }
     }, [isOpen, token]);
 
+    // 🟢 Listen for external requests (like "Report Issue" from MyOrders)
+    useEffect(() => {
+        const handleOpenChat = (e) => {
+            setIsOpen(true);
+            if (e.detail && e.detail.text) {
+                // Wait briefly for smooth open, then send the message
+                setTimeout(() => handleSend(e.detail.text), 500); 
+            }
+        };
+        window.addEventListener('open-chat', handleOpenChat);
+        return () => window.removeEventListener('open-chat', handleOpenChat);
+    }, []);
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isTyping, isOpen]);
@@ -75,9 +88,9 @@ const ChatWidget = () => {
                             <div className="flex items-center gap-2">
                                 <Bot size={20} />
                                 <div>
-                                    <h3 className="font-bold text-sm leading-tight">Aura Support AI</h3>
+                                    <h3 className="font-bold text-sm leading-tight">MandviCart Support</h3>
                                     <p className="text-[10px] text-green-100 flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse"></span> Synchronized
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse"></span> Online
                                     </p>
                                 </div>
                             </div>

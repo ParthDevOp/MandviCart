@@ -4,7 +4,7 @@ import Order from "../models/orderModel.js";
 import { v2 as cloudinary } from "cloudinary";
 
 // ==========================================
-// 🤖 HELPER: INTELLIGENT BOT RESPONSE (AURA)
+// 🤖 HELPER: INTELLIGENT BOT RESPONSE (MANDVICART SUPPORT AI)
 // ==========================================
 const getBotResponse = async (userId, text, hasImage) => {
     const lowerText = text ? text.toLowerCase() : "";
@@ -26,7 +26,7 @@ const getBotResponse = async (userId, text, hasImage) => {
         const hour = new Date().getHours();
         let greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
-        response.text = `✨ **${greeting}, ${userName}.** I am **Aura**, your Advanced Support Intelligence.\n\nMy neural network is fully synchronized with the MandviCart ecosystem. How may I accelerate your experience today?`;
+        response.text = `✨ **${greeting}, ${userName}.** I am the **MandviCart Support AI**.\n\nI am here to help you track orders, manage active deliveries, or process any refunds for missing or damaged items. How can I assist you?`;
         response.quickReplies = ["📦 Track Order", "🚚 Delivery Delay", "💔 Report Issue", "💳 Refund Policy", "🔒 Account Help", "👤 Real Human"];
         return response;
     }
@@ -63,14 +63,14 @@ const getBotResponse = async (userId, text, hasImage) => {
 
     // 5. 💔 FAULTY / DAMAGED ITEM (The Hook)
     if (['faulty', 'damage', 'broken', 'defect', 'spoiled', 'rotten', 'bad', 'issue'].some(w => lowerText.includes(w))) {
-        response.text = "✨ **Quality Assurance Protocol Activated.**\nI am deeply sorry that an item in your payload did not meet our high synchronization standards.\n\nTo trigger an automated rapid-refund, please tap the 📷 **Camera Icon** below and send a visual scan (photo) of the defective asset.";
+        response.text = "✨ **Report Order Issue.**\nI am deeply sorry that an item in your order was broken or missing. Our policy guarantees a full refund for defective items.\n\nTo trigger an automated rapid-refund, please tap the 📷 **Camera Icon** below and send a visual scan (photo) of the defective asset so our team can approve it.";
         return response;
     }
 
-    // 6. 💳 REFUND INQUIRY
+    // 6. 💳 CANCEL / REFUND INQUIRY
     if (['refund', 'return', 'money', 'cancel'].some(w => lowerText.includes(w))) {
-        response.text = "✨ **Financial Operations Database.**\n\n• **Faulty Goods:** Full rapid reimbursement upon visual scan upload (📷).\n• **Cancellations:** Automatic balance restoration to original payment method within 24-48 business hours.\n\nWould you like me to initiate a financial dispute trace with a human auditor?";
-        response.quickReplies = ["👤 Open Dispute", "🔙 Main Menu"];
+        response.text = "✨ **Refund & Cancellation Policy.**\n\n• **Active Orders:** To ensure rapid dispatch for perishable groceries, active orders cannot be canceled manually.\n• **Broken/Missing Items:** If an item arrives broken or is missing, we will instantly process a refund for that item upon photo verification.\n\nWould you like me to open a support ticket for a manual refund?";
+        response.quickReplies = ["👤 Open Ticket", "🔙 Main Menu"];
         return response;
     }
 

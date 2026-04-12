@@ -3,63 +3,119 @@ import { useAppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
 import { 
     Truck, CheckCircle, XCircle, Clock, RefreshCw, 
-    Key, ShoppingBag, X, ChevronRight, Store, MapPin, AlertCircle, Receipt, Download, CreditCard, Banknote 
+    Key, ShoppingBag, X, ChevronRight, Store, MapPin, AlertCircle, Receipt, Download, CreditCard, Banknote, Navigation, Radar 
 } from 'lucide-react';
 
 import TrackingMap from '../components/TrackingMap'; 
 
-// 🟢 NEW: Animated Card Component for Active Orders
+// 🟢 NEW: Clean White/Green Tracking Card with Status Logic
 const AnimatedTrackingCard = ({ order, onTrack }) => {
-    const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+    const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
 
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date().toLocaleTimeString()), 1000);
-        return () => clearInterval(timer);
-    }, []);
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date().toLocaleTimeString()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
-    return (
-        <div className="animated-tracker-card shadow-xl shadow-emerald-900/5 border border-emerald-100">
-            <div className="tracker-time-badge shadow-sm">
-                <div className="tracker-clock-icon"></div>
-                <span>{currentTime}</span>
-            </div>
+    // Logic for steps
+    const isPacking = order.status === 'Packing';
+    const isReady = order.status === 'Ready for Pickup';
+    const isOut = order.status === 'Out for Delivery';
+    
+    // Progress bar width
+    let progressWidth = "w-0";
+    if (isReady) progressWidth = "w-1/2";
+    if (isOut) progressWidth = "w-[85%]";
 
-            <div className="tracker-illustration">
-                <div className="tracker-conveyor-belt"></div>
-                <div className="tracker-package">
-                    <div className="tracker-box">
-                        <div className="tracker-box-face tracker-box-top">
-                            <div className="tracker-tape"></div>
-                            <div className="tracker-tape tracker-tape-horizontal"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    return (
+        <div className="bg-white border-2 border-emerald-100 rounded-[2rem] p-6 max-w-md w-full shadow-[0_10px_40px_rgba(16,185,129,0.08)] group hover:-translate-y-1 transition-all duration-300">
+            
+            {/* Header */}
+            <div className="flex justify-between items-start mb-6">
+                <div>
+                    <h4 className="text-emerald-800 font-black tracking-widest text-xs uppercase flex items-center gap-2">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Live Update
+                    </h4>
+                    <p className="text-slate-400 text-[10px] font-mono mt-1">{currentTime}</p>
+                </div>
+                
+                <div className="bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
+                    <span className="text-emerald-700 font-bold text-[10px] uppercase tracking-wider">{order.status}</span>
+                </div>
+            </div>
 
-            <div className="tracker-content">
-                <div className="tracker-card-title flex items-center justify-between">
-                    Live Tracking 
-                    <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md uppercase tracking-widest font-black flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                        {order.status}
-                    </span>
-                </div>
-                <p className="tracker-card-description">
-                    Your order from <strong>MandviCart</strong> is currently in progress. Tap below to open the live GPS map and monitor your delivery.
-                </p>
-            </div>
+            {/* Stepper Visualization */}
+            <div className="w-full bg-slate-50 rounded-[1.25rem] border border-slate-100 p-5 mb-6 relative">
+                
+                <div className="flex justify-between items-center relative z-10">
+                    {/* Node 1: Shop */}
+                    <div className="flex flex-col items-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shadow-sm z-10 bg-white
+                                      ${isPacking || isReady || isOut ? 'border-emerald-500 text-emerald-600' : 'border-slate-200 text-slate-300'}`}>
+                            <Store size={18} />
+                        </div>
+                        <span className="text-[10px] text-slate-500 mt-2 font-bold uppercase">{isPacking ? 'At Shop' : 'Packed'}</span>
+                    </div>
 
-            <div className="tracker-footer">
-                <button onClick={() => onTrack(order)} className="tracker-view-status-btn">
-                    Open Live Map
-                </button>
-                <div className="tracker-status-message">
-                    <div className="tracker-package-icon"></div>
-                    <span className="font-medium text-emerald-600">OTP: <span className="font-black text-lg tracking-widest text-slate-800 ml-1">{order.otp || "WAIT"}</span></span>
-                </div>
-            </div>
-        </div>
-    );
+                    {/* Progress Bar Background */}
+                    <div className="absolute top-5 left-8 right-8 h-1 bg-slate-200 rounded-full -z-0">
+                        {/* Progress Fill */}
+                        <div className={`h-full bg-emerald-500 rounded-full transition-all duration-1000 ${progressWidth}`}></div>
+                    </div>
+
+                    {/* Node 2: Courier */}
+                    <div className="flex flex-col items-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shadow-sm z-10 bg-white relative
+                                      ${isOut ? 'border-emerald-500 text-emerald-600' : isReady ? 'border-cyan-400 text-cyan-600 shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'border-slate-200 text-slate-300'}`}>
+                            {isReady && <div className="absolute inset-0 rounded-full animate-ping border border-cyan-400 opacity-50"></div>}
+                            <Truck size={18} />
+                        </div>
+                        <span className="text-[10px] text-slate-500 mt-2 font-bold uppercase">
+                            {isOut ? 'At Delivery Boy' : isReady ? 'Not Out Yet' : 'Awaiting Boy'}
+                        </span>
+                    </div>
+
+                    {/* Node 3: Target */}
+                    <div className="flex flex-col items-center">
+                        <div className="w-10 h-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center shadow-sm z-10">
+                            <MapPin size={18} className="text-slate-300" />
+                        </div>
+                        <span className="text-[10px] text-slate-500 mt-2 font-bold uppercase">Target</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Order Info */}
+            <div>
+                <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6 border-l-2 border-emerald-500 pl-3">
+                    {isPacking && "Your items are securely being sorted and packed at MandviCart."}
+                    {isReady && "Your order is ready. A delivery boy has been assigned to pick it up!"}
+                    {isOut && "A delivery boy is on the way to your coordinates. Track live!"}
+                </p>
+                <div className="flex flex-col gap-3">
+                    <div className="flex justify-between items-center gap-3">
+                        <button onClick={() => onTrack(order)} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-[0_4px_15px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_20px_rgba(16,185,129,0.4)] flex justify-center items-center gap-2 text-sm z-10">
+                            <Navigation size={18} /> Open Live Map
+                        </button>
+                        <div className="bg-slate-50 border border-slate-200 py-2.5 px-4 rounded-xl flex flex-col items-center justify-center min-w-[80px]">
+                            <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">OTP</span>
+                            <span className="text-emerald-700 font-black text-lg tracking-widest leading-none">{order.otp || "- -"}</span>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => window.dispatchEvent(new CustomEvent('open-chat', { detail: { text: `My Order #${order._id.slice(-8).toUpperCase()} arrived broken, I need a refund.` } }))} 
+                        className="text-xs text-slate-400 hover:text-red-500 font-medium text-center transition-colors mt-2"
+                    >
+                        Report Issue / Request Refund
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 const MyOrders = () => {
@@ -278,50 +334,7 @@ const MyOrders = () => {
 
     return (
         <>
-        {/* 🟢 INJECTED STYLES FOR THE ANIMATED CARD */}
-        <style>{`
-            .animated-tracker-card {
-                background: white; border-radius: 24px; width: 100%; max-width: 450px;
-                padding: 25px; position: relative; overflow: hidden; margin: 0 auto;
-            }
-            .tracker-time-badge {
-                position: absolute; top: 15px; right: 15px; background: #1a1a1a; color: white;
-                padding: 6px 10px; border-radius: 50px; display: flex; align-items: center; gap: 6px;
-                font-size: 11px; font-weight: 600; z-index: 10;
-            }
-            .tracker-clock-icon { width: 16px; height: 16px; border: 1.5px solid white; border-radius: 50%; position: relative; }
-            .tracker-clock-icon::before {
-                content: ""; position: absolute; width: 1.5px; height: 6px; background: white;
-                top: 2px; left: 50%; transform: translateX(-50%); transform-origin: bottom; animation: clockHand 2s infinite linear;
-            }
-            @keyframes clockHand { 0% { transform: translateX(-50%) rotate(0deg); } 100% { transform: translateX(-50%) rotate(360deg); } }
-            .tracker-illustration { width: 100%; height: 180px; margin-bottom: 25px; position: relative; display: flex; justify-content: center; align-items: center; }
-            .tracker-conveyor-belt { position: absolute; width: 100%; height: 70px; background: #e0e0e0; border-radius: 6px; overflow: hidden; top: 80px; }
-            .tracker-conveyor-belt::before {
-                content: ""; position: absolute; width: 200%; height: 100%;
-                background: repeating-linear-gradient(90deg, transparent, transparent 30px, #d0d0d0 30px, #d0d0d0 35px);
-                animation: conveyorMove 3s linear infinite;
-            }
-            @keyframes conveyorMove { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-            .tracker-package { position: relative; width: 100px; height: 100px; animation: packageSlide 4s ease-in-out infinite; z-index: 5; }
-            @keyframes packageSlide { 0%, 100% { transform: translateX(-100px); } 50% { transform: translateX(100px); } }
-            .tracker-box { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: boxRotate 4s ease-in-out infinite; }
-            @keyframes boxRotate { 0%, 100% { transform: rotateY(0deg); } 25% { transform: rotateY(-10deg); } 75% { transform: rotateY(10deg); } }
-            .tracker-box-face { position: absolute; width: 100px; height: 100px; background: white; border: 2px solid #ddd; border-radius: 6px; }
-            .tracker-box-top { background: linear-gradient(135deg, #fff 0%, #f5f5f5 100%); transform: translateY(-12px); }
-            .tracker-tape { position: absolute; width: 30px; height: 100%; background: #10b981; left: 50%; transform: translateX(-50%); opacity: 0.9; }
-            .tracker-tape-horizontal { width: 100%; height: 30px; top: 50%; transform: translateY(-50%); left: 0; }
-            .tracker-content { position: relative; z-index: 2; transform: translateY(-20px); }
-            .tracker-card-title { font-size: 1.25rem; color: #1a1a1a; margin-bottom: 12px; font-weight: 800; }
-            .tracker-card-description { font-size: 0.85rem; color: #666; line-height: 1.5; margin-bottom: 25px; }
-            .tracker-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding-top: 18px; border-top: 1px solid #e8e8e8; }
-            .tracker-view-status-btn { background: #1a1a1a; color: white; border: 1.5px solid #1a1a1a; padding: 12px 32px; border-radius: 50px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; width: 100%; }
-            .tracker-view-status-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); background: #000; }
-            .tracker-status-message { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; width: 100%; justify-content: center; }
-            .tracker-package-icon { width: 24px; height: 24px; background: #f5f5f5; border: 1.5px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; position: relative; }
-            .tracker-package-icon::after { content: ""; width: 12px; height: 2px; background: #ddd; }
-            .tracker-package-icon::before { content: ""; width: 2px; height: 12px; background: #ddd; position: absolute; }
-        `}</style>
+        {/* Pure Tailwind styling used for Animated Card */ }
 
         <div className='mt-20 pb-20 px-4 md:px-16 lg:px-32 bg-gray-50 min-h-screen font-outfit relative z-0'>
             
@@ -348,11 +361,12 @@ const MyOrders = () => {
                 </button>
             </div>
 
-            {/* 🟢 ACTIVE DELIVERIES HERO SECTION */}
+            {/* 🟢 ACTIVE DELIVERIES SECTION */}
             {activeOrders.length > 0 && (
-                <div className="mb-10 p-6 bg-emerald-50 border border-emerald-100 rounded-[2.5rem]">
+                <div className="mb-10 p-6 md:p-8 bg-emerald-50/50 border border-emerald-100 rounded-[2.5rem] relative">
                     <h3 className="text-emerald-800 font-black text-xl mb-6 text-center">Active Deliveries</h3>
-                    <div className="flex flex-wrap justify-center gap-6">
+                    
+                    <div className="flex flex-wrap justify-center gap-6 relative z-10">
                         {activeOrders.map(order => (
                             <AnimatedTrackingCard key={order._id} order={order} onTrack={handleTrackLive} />
                         ))}
