@@ -70,23 +70,6 @@ const userSchema = new mongoose.Schema({
   minimize: false 
 });
 
-// ==========================================
-// 🛡️ SMART PASSWORD HASHING MIDDLEWARE
-// ==========================================
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-
-  // 🟢 FIXED "DOUBLE-HASH" BUG: 
-  // If a controller (like createAccount) already hashed the password using bcrypt,
-  // it will start with $2a$ or $2b$. We skip hashing it again to prevent breaking login!
-  if (this.password.startsWith('$2a$') || this.password.startsWith('$2b$')) {
-      return next();
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
 
 userSchema.methods.matchPassword = async function(enteredPassword) {
   if(!this.password || !enteredPassword) return false;
