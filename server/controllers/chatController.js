@@ -4,76 +4,99 @@ import Order from "../models/orderModel.js";
 import { v2 as cloudinary } from "cloudinary";
 
 // ==========================================
-// 🤖 HELPER: INTELLIGENT BOT RESPONSE
+// 🤖 HELPER: INTELLIGENT BOT RESPONSE (AURA)
 // ==========================================
 const getBotResponse = async (userId, text, hasImage) => {
     const lowerText = text ? text.toLowerCase() : "";
     const user = await User.findById(userId);
     
-    // 🟢 Safe fallback just in case user data is incomplete
-    const userName = user?.name || 'Valued Customer'; 
+    // 🟢 Safe fallback
+    const userName = user?.name ? user.name.split(' ')[0] : 'Valued Guest'; 
     
     let response = { text: "", quickReplies: [] };
 
     // 1. 📸 IMAGE RECEIVED (Proof of Faulty Item -> Admin Takeover)
     if (hasImage) {
-        response.text = "🤖 **Evidence Received.** 📸\nThank you for providing a photo of the faulty item. I have attached this securely to your case file.\n\n🔄 **Transferring to Live Agent...**\nPlease hold for a moment. A human admin is now reviewing your image and will process your direct refund or replacement right away.";
+        response.text = "✨ **Visual Data Analyzed.** 📸\nThank you for providing photographic evidence. I have securely attached this to your case file.\n\n🔄 **Engaging Human Protocol...**\nPlease hold. I am directly routing this visual proof to our Senior Support Team for immediate review. Your refund or replacement is our top priority.";
         return response; // No quick replies, forces them to wait for the Admin
     }
 
-    // 2. 👋 GREETINGS
-    if (['hi', 'hii', 'hello', 'hey', 'start', 'greetings'].some(w => lowerText.includes(w))) {
+    // 2. 👋 MAIN MENU / GREETINGS
+    if (['hi', 'hii', 'hello', 'hey', 'start', 'greetings', 'menu', 'back', 'main menu'].some(w => lowerText.includes(w))) {
         const hour = new Date().getHours();
         let greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
-        response.text = `🤖 **${greeting}, ${userName}!** \nWelcome to Mandvi Cart Priority Support. I am your virtual assistant. \n\nHow may I assist you today?`;
-        response.quickReplies = ["📦 Track My Order", "💔 Report Faulty Item", "💳 Refund Policy", "👤 Speak to an Agent"];
+        response.text = `✨ **${greeting}, ${userName}.** I am **Aura**, your Advanced Support Intelligence.\n\nMy neural network is fully synchronized with the MandviCart ecosystem. How may I accelerate your experience today?`;
+        response.quickReplies = ["📦 Track Order", "🚚 Delivery Delay", "💔 Report Issue", "💳 Refund Policy", "🔒 Account Help", "👤 Real Human"];
         return response;
     }
 
-    // 3. 📦 ORDER STATUS
-    if (['order', 'track', 'status', 'where'].some(w => lowerText.includes(w))) {
+    // 3. 📦 EXACT ORDER TRACKING
+    if (['order', 'track', 'status', 'where', 'missing'].some(w => lowerText.includes(w))) {
         const lastOrder = await Order.findOne({ userId }).sort({ date: -1 });
         
         if (!lastOrder) {
-            response.text = "🤖 I have checked our records, but I am unable to locate any recent orders associated with this account. \n\nWould you like to speak with an agent?";
-            response.quickReplies = ["👤 Speak to an Agent", "🔙 Main Menu"];
+            response.text = "✨ **Database Scanning...**\nI've analyzed our logs, but no recent orders are associated with your verified profile. \n\nAre you looking for a tracking update on an older order or a different account?";
+            response.quickReplies = ["👤 Connect to Admin", "🔙 Main Menu"];
         } else {
             const date = new Date(lastOrder.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
             
-            response.text = `🤖 **Order Status Update** \n\n**Order ID:** #${lastOrder._id.slice(-6).toUpperCase()}\n**Date Placed:** ${date}\n**Current Status:** ${lastOrder.status}\n**Payment:** ${lastOrder.payment ? '✅ Paid' : '⏳ Pending'}`;
-            response.quickReplies = ["💔 Report Issue", "✅ All Good, Thanks"];
+            response.text = `✨ **Real-Time Order Telemetry** \n\n**Order ID:** \`#${lastOrder._id.slice(-8).toUpperCase()}\`\n**Timestamp:** ${date}\n**Current Status:** \`${lastOrder.status.toUpperCase()}\`\n**Financial Status:** ${lastOrder.payment ? '✅ SECURED' : '⏳ PENDING VERIFICATION'}\n\nOur system predicts this delivery is proceeding optimally.`;
+            response.quickReplies = ["🚚 It's Delayed", "💔 Report Issue", "🔙 Main Menu"];
         }
         return response;
     }
 
-    // 4. 💔 FAULTY / DAMAGED ITEM (The Hook)
+    // 4. 🚚 DELIVERY DELAY LOGIC
+    if (['delay', 'late', 'rider', 'slow'].some(w => lowerText.includes(w))) {
+        response.text = "✨ **Logistics Analysis Initiated.**\nI apologize if our delivery telemetry indicates a delay. Depending on local traffic density and vendor processing, minor anomalies can occur.\n\nWould you like me to ping the assigned Rider's GPS directly or escalate this to logistical command?";
+        response.quickReplies = ["📡 Ping Rider", "👤 Escalate to Courier Admin", "🔙 Main Menu"];
+        return response;
+    }
+
+    // Ping Rider Simulator
+    if (['ping', 'gps'].some(w => lowerText.includes(w))) {
+        response.text = "📡 **Pinging Rider Node...**\nSignal received. The associated fulfillment rider is en-route. Please monitor the Live Map interface for real-time topographical updates.";
+        response.quickReplies = ["✅ Excellent", "🔙 Main Menu"];
+        return response;
+    }
+
+    // 5. 💔 FAULTY / DAMAGED ITEM (The Hook)
     if (['faulty', 'damage', 'broken', 'defect', 'spoiled', 'rotten', 'bad', 'issue'].some(w => lowerText.includes(w))) {
-        response.text = "🤖 I am so sorry to hear that your item arrived in that condition!\n\nTo help us process a **direct refund** or replacement for you immediately, please tap the 📷 **Camera Icon** below and upload a clear picture of the faulty item.";
+        response.text = "✨ **Quality Assurance Protocol Activated.**\nI am deeply sorry that an item in your payload did not meet our high synchronization standards.\n\nTo trigger an automated rapid-refund, please tap the 📷 **Camera Icon** below and send a visual scan (photo) of the defective asset.";
         return response;
     }
 
-    // 5. 💳 REFUND INQUIRY
-    if (['refund', 'return', 'money'].some(w => lowerText.includes(w))) {
-        response.text = "🤖 **Refunds for Faulty Items**\n\nIf you received a damaged or faulty item, we will refund you directly! Just upload a photo of the item using the 📷 **Camera Icon** below, and an admin will issue your refund to your original payment method.";
-        response.quickReplies = ["👤 Speak to an Agent", "🔙 Main Menu"];
+    // 6. 💳 REFUND INQUIRY
+    if (['refund', 'return', 'money', 'cancel'].some(w => lowerText.includes(w))) {
+        response.text = "✨ **Financial Operations Database.**\n\n• **Faulty Goods:** Full rapid reimbursement upon visual scan upload (📷).\n• **Cancellations:** Automatic balance restoration to original payment method within 24-48 business hours.\n\nWould you like me to initiate a financial dispute trace with a human auditor?";
+        response.quickReplies = ["👤 Open Dispute", "🔙 Main Menu"];
         return response;
     }
 
-    // 6. 👤 AGENT REQUEST
-    if (['agent', 'human', 'support', 'person'].some(w => lowerText.includes(w))) {
-        response.text = "🤖 I am transferring your chat to our specialized support team. A human agent will take over this conversation shortly.";
+    // 7. 🔒 ACCOUNT & SECURITY
+    if (['account', 'password', 'login', 'security', 'hack'].some(w => lowerText.includes(w))) {
+        response.text = "✨ **Security & Identity Management.**\nYour MandviCart profile is encrypted via enterprise-grade systems.\n\nIf you simply need to reset credentials, log out and click 'Forgot Password'. If you suspect a breach, I can lock your account and patch you through to Cyber Security Response.";
+        response.quickReplies = ["👤 Security Admin", "🔙 Main Menu"];
         return response;
     }
 
-    // 7. ✅ CLOSING
-    if (['thank', 'ok', 'bye', 'good'].some(w => lowerText.includes(w))) {
-        response.text = "🤖 You are very welcome! It was a pleasure assisting you.\n\nThank you for choosing Mandvi Cart. Have a wonderful day! 🌿";
+    // 8. 👤 AGENT REQUEST
+    if (['agent', 'human', 'support', 'person', 'supervisor', 'admin', 'dispute'].some(w => lowerText.includes(w))) {
+        response.text = "✨ **Transferring to Carbon-Based Support Unit...**\nI am passing your encrypted session profile to a human specialist. They will assume manual control of this channel shortly.";
+        return response; // No replies, wait for admin
+    }
+
+    // 9. ✅ CLOSING
+    if (['thank', 'ok', 'bye', 'good', 'excellent', 'perfect'].some(w => lowerText.includes(w))) {
+        response.text = "✨ **Session Complete.**\nIt was a privilege processing your request, " + userName + ".\n\nMandviCart Intelligence signing off. Have a highly productive cycle! 🌌";
         return response;
     }
 
-    // Default fallback if bot doesn't understand
-    return null;
+    // 10. Default Fallback
+    response.text = "✨ **Query Not Recognized.**\nMy neural pathways did not fully parse your request. Could you rephrase your inquiry using the quick parameters below, or request human intervention?";
+    response.quickReplies = ["👤 Connect to Admin", "🔙 Main Menu"];
+    return response;
 };
 
 // ==========================================

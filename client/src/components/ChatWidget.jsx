@@ -75,9 +75,9 @@ const ChatWidget = () => {
                             <div className="flex items-center gap-2">
                                 <Bot size={20} />
                                 <div>
-                                    <h3 className="font-bold text-sm leading-tight">GreenBot Support</h3>
+                                    <h3 className="font-bold text-sm leading-tight">Aura Support AI</h3>
                                     <p className="text-[10px] text-green-100 flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse"></span> Online
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse"></span> Synchronized
                                     </p>
                                 </div>
                             </div>
@@ -89,7 +89,7 @@ const ChatWidget = () => {
                             {messages.length === 0 && (
                                 <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-70">
                                     <Bot size={40} className="mb-2" />
-                                    <p className="text-center text-sm">Hi! How can we help you today? 👋</p>
+                                    <p className="text-center text-sm">System Ready. Say hello to begin. ✨</p>
                                 </div>
                             )}
                             
