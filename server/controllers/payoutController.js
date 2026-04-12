@@ -58,7 +58,7 @@ export const requestPayout = async (req, res) => {
         let totalEarnings = 0;
         if (user.role === 'seller') {
             const orders = await Order.find({ sellerId: req.userId, status: 'Delivered' });
-            totalEarnings = orders.reduce((sum, order) => sum + (order.sellerEarnings || 0), 0);
+            totalEarnings = orders.reduce((sum, order) => sum + (order.sellerEarnings || (order.amount * 0.95) || 0), 0);
         } else if (user.role === 'rider') {
             const orders = await Order.find({ riderId: req.userId, status: 'Delivered' });
             totalEarnings = orders.reduce((sum, order) => sum + (order.riderEarnings || order.deliveryFee || 40), 0);

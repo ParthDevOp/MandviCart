@@ -33,6 +33,22 @@ const getInterpolatedPosition = (path, progressPercent) => {
     return { lat: p1.lat() + (p2.lat() - p1.lat()) * t, lng: p1.lng() + (p2.lng() - p1.lng()) * t };
 };
 
+// Calculate split arrays for the traveled (gray) vs upcoming (green) routes
+const getSplitPaths = (pathPoints, progressPercent, currentPos) => {
+    if (!pathPoints || pathPoints.length === 0) return { past: [], future: [] };
+    if (progressPercent >= 100) return { past: pathPoints, future: [] };
+    if (progressPercent <= 0) return { past: [], future: pathPoints };
+    
+    const floatIndex = (progressPercent / 100) * (pathPoints.length - 1);
+    const lowerIndex = Math.floor(floatIndex);
+    
+    const exactPos = currentPos && window.google ? new window.google.maps.LatLng(currentPos.lat, currentPos.lng) : pathPoints[lowerIndex];
+
+    const past = [...pathPoints.slice(0, lowerIndex + 1), exactPos];
+    const future = [exactPos, ...pathPoints.slice(lowerIndex + 1)];
+    return { past, future };
+};
+
 const TrackingMap = ({ order }) => {
     const { backendUrl } = useAppContext();
     const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY });
@@ -51,6 +67,7 @@ const TrackingMap = ({ order }) => {
     const [pathPoints, setPathPoints] = useState([]);
     const [progress, setProgress] = useState(0);
     const [riderPosition, setRiderPosition] = useState(pickupLoc);
+    const [routeMeta, setRouteMeta] = useState({ distance: '', duration: '' });
     const socketRef = useRef(null);
 
     // Sockets
@@ -80,6 +97,10 @@ const TrackingMap = ({ order }) => {
                 if (status === google.maps.DirectionsStatus.OK) {
                     setDirections(result);
                     setPathPoints(result.routes[0].overview_path);
+                    const leg = result.routes[0].legs[0];
+                    if (leg) {
+                        setRouteMeta({ distance: leg.distance.text, duration: leg.duration.text });
+                    }
                 }
             });
         }
@@ -136,76 +157,91 @@ const TrackingMap = ({ order }) => {
 
     return (
         <div className="relative h-full w-full font-outfit rounded-3xl overflow-hidden border border-gray-200 shadow-lg bg-gray-50">
-            <GoogleMap mapContainerStyle={{ width: '100%', height: '100%' }} center={riderPosition || dropoffLoc} zoom={15} options={MAP_OPTIONS}>
-                {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, preserveViewport: false, polylineOptions: { strokeColor: "#94a3b8", strokeWeight: 6, strokeOpacity: 0.5 } }} />}
+            {/* Map stays locked onto the Rider's active coordinates continuously */}
+            <GoogleMap mapContainerStyle={{ width: '100%', height: '100%' }} center={riderPosition || dropoffLoc} zoom={16} options={MAP_OPTIONS}>
+                
+                {/* Suppress the single-color route */}
+                {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: true, preserveViewport: true, polylineOptions: { strokeOpacity: 0 } }} />}
+                
+                {/* Draw Dynamic Split Route */}
+                {directions && pathPoints.length > 0 && (
+                    <>
+                        <Polyline path={getSplitPaths(pathPoints, progress, riderPosition).past} options={{ strokeColor: "#94a3b8", strokeWeight: 6, strokeOpacity: 0.6 }} />
+                        <Polyline path={getSplitPaths(pathPoints, progress, riderPosition).future} options={{ strokeColor: "#10b981", strokeWeight: 7, strokeOpacity: 0.9 }} />
+                    </>
+                )}
+
                 <Marker position={pickupLoc} icon={{ url: assets.shop, scaledSize: new google.maps.Size(40, 40) }} />
                 <Marker position={dropoffLoc} icon={{ url: assets.home, scaledSize: new google.maps.Size(40, 40) }} />
                 <Marker position={riderPosition || pickupLoc} icon={{ url: assets.rider, scaledSize: new google.maps.Size(50, 50), anchor: new google.maps.Point(25, 25) }} zIndex={100} />
             </GoogleMap>
 
-            {/* 🟢 LIGHT FLOATING STATUS HUD */}
-            <div className="absolute top-6 left-6 right-20 z-10 pointer-events-none">
-                <div className="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-xl border border-gray-100">
+            {/* 🟢 PREMIUM GLASS HUD */}
+            <div className="absolute top-6 left-6 right-6 md:right-auto md:w-96 z-10 pointer-events-none">
+                <div className="bg-white/80 backdrop-blur-2xl p-5 rounded-[2rem] shadow-[0_20px_40px_rgba(0,0,0,0.06)] border border-white/50">
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-4">
                             <div className="relative">
-                                <div className="w-12 h-12 bg-green-50 border border-green-100 rounded-full flex items-center justify-center text-green-600 shadow-sm">
-                                    {isDelivery ? <Navigation size={24}/> : <Package size={24}/>}
+                                <div className="w-14 h-14 bg-gradient-to-tr from-emerald-100 to-green-50 border border-emerald-200 rounded-full flex items-center justify-center text-emerald-600 shadow-inner">
+                                    {isDelivery ? <Navigation size={26}/> : <Package size={26}/>}
                                 </div>
-                                <span className="absolute -bottom-1 -right-1 flex h-4 w-4"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white"></span></span>
+                                <span className="absolute -bottom-1 -right-1 flex h-4 w-4"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white"></span></span>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isPickup ? 'VALET DISPATCHED' : 'OUT FOR DELIVERY'}</p>
-                                <h3 className="font-black text-gray-800 text-lg leading-tight mt-0.5">{isPickup ? 'Valet heading to store' : 'Arriving at your location'}</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{isPickup ? 'VALET DISPATCHED' : 'OUT FOR DELIVERY'}</p>
+                                <h3 className="font-black text-slate-800 text-[22px] leading-tight mt-0.5">
+                                    {isPickup ? 'Heading to store' : routeMeta.duration ? `Arriving in ${routeMeta.duration}` : 'Arriving...'}
+                                </h3>
+                                {routeMeta.distance && <p className="text-[11px] font-bold text-slate-500 mt-1">{routeMeta.distance} away from your coordinates.</p>}
                             </div>
                         </div>
-                    </div>
-                    <div className="mt-4 w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                        <div className="h-full bg-green-500 transition-all ease-linear shadow-[0_0_10px_rgba(34,197,94,0.4)]" style={{ width: `${progress}%` }}></div>
                     </div>
                 </div>
             </div>
 
-            {/* 🟢 LIGHT RIDER INFO & OTP BOTTOM SHEET */}
+            {/* 🟢 PREMIUM RIDER BOTTOM SHEET */}
             {assignedRider && (
-                <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-2xl z-20 rounded-t-[2.5rem] border-t border-gray-200 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
-                    <div className="w-full h-8 flex items-center justify-center"><div className="w-16 h-1.5 bg-gray-200 rounded-full"></div></div>
+                <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-3xl z-20 rounded-t-[3rem] border-t border-white shadow-[0_-20px_50px_rgba(0,0,0,0.06)] pb-4">
+                    <div className="w-full h-8 flex items-center justify-center"><div className="w-12 h-1.5 bg-slate-200 rounded-full"></div></div>
                     
-                    <div className="px-6 pb-8 pt-2">
+                    <div className="px-6 pb-6 pt-1">
                         {/* Rider Profile Row */}
-                        <div className="flex items-center gap-4">
-                            <img src={assignedRider.profileImage || "https://cdn-icons-png.flaticon.com/512/4825/4825038.png"} alt="Rider" className="w-14 h-14 rounded-full border-2 border-green-100 p-0.5 object-cover shadow-sm bg-gray-50" />
+                        <div className="flex items-center gap-5">
+                            <div className="relative">
+                                <img src={assignedRider.profileImage || "https://cdn-icons-png.flaticon.com/512/4825/4825038.png"} alt="Rider" className="w-16 h-16 rounded-full border-[3px] border-white object-cover shadow-[0_8px_20px_rgba(16,185,129,0.2)] bg-slate-100 z-10 relative" />
+                                <div className="absolute inset-0 rounded-full animate-ping bg-emerald-400 opacity-20"></div>
+                            </div>
                             <div className="flex-1">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">YOUR VALET</p>
-                                <h4 className="font-black text-gray-800 text-lg tracking-wide leading-none">{assignedRider.name}</h4>
-                                <div className="flex items-center gap-1 text-xs text-gray-500 font-bold mt-1.5">
-                                    <ShieldCheck size={14} className="text-green-500"/>
-                                    <span>{assignedRider.vehicleNumber || 'Verified Identity'}</span>
+                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                                    <ShieldCheck size={12}/> Verified Courier
+                                </p>
+                                <h4 className="font-black text-slate-800 text-xl tracking-tight leading-none">{assignedRider.name}</h4>
+                                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold mt-2 bg-slate-100 px-2.5 py-1 rounded-md w-max">
+                                    <span>{assignedRider.vehicleNumber || 'Electric Vehicle'}</span>
                                 </div>
                             </div>
                             {assignedRider.phone && (
-                                <a href={`tel:${assignedRider.phone}`} className="w-12 h-12 bg-green-50 border border-green-100 rounded-full flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors shadow-sm active:scale-95 pointer-events-auto">
-                                    <Phone size={20} />
+                                <a href={`tel:${assignedRider.phone}`} className="w-14 h-14 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-full flex items-center justify-center text-white hover:opacity-90 transition-all shadow-[0_10px_25px_rgba(16,185,129,0.4)] hover:shadow-[0_15px_30px_rgba(16,185,129,0.5)] hover:-translate-y-1 active:scale-95 pointer-events-auto">
+                                    <Phone size={22} fill="currentColor" />
                                 </a>
                             )}
                         </div>
 
                         {/* CUSTOMER DELIVERY OTP DISPLAY */}
-                        <div className="mt-5 pt-5 border-t border-gray-100 flex items-center justify-between">
+                        <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
                             <div className="flex items-start gap-3">
-                                <div className="p-2.5 bg-gray-50 rounded-xl text-gray-500 border border-gray-200 shadow-sm">
-                                    <Key size={20} />
+                                <div className="p-3 bg-gradient-to-b from-slate-50 to-slate-100 rounded-2xl text-slate-500 border border-slate-200 shadow-inner">
+                                    <Key size={22} className="text-slate-700" />
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Delivery PIN</p>
-                                    <p className="text-xs text-gray-600 mt-0.5 font-bold">Share with valet at doorstep</p>
+                                <div className="flex flex-col justify-center h-full pt-0.5">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Security PIN</p>
+                                    <p className="text-[11px] text-slate-500 mt-1 font-bold">Share explicitly upon package handoff</p>
                                 </div>
                             </div>
-                            <div className="bg-green-50 border border-green-200 px-5 py-2.5 rounded-xl text-2xl font-black text-green-700 tracking-[0.2em] shadow-inner">
-                                {order.otp || "----"}
+                            <div className="bg-slate-900 px-6 py-3 rounded-[1.25rem] text-2xl font-black text-emerald-400 tracking-[0.3em] shadow-[0_10px_30px_rgba(15,23,42,0.2)] border border-slate-800">
+                                {order.otp || "- - - -"}
                             </div>
                         </div>
-
                     </div>
                 </div>
             )}

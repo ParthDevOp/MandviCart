@@ -17,6 +17,7 @@ const SellerDashboard = () => {
     
     const [graphData, setGraphData] = useState([]);
     const [recentOrders, setRecentOrders] = useState([]);
+    const [payoutsList, setPayoutsList] = useState([]); // 🟢 NEW
     const [loadingPayout, setLoadingPayout] = useState(false);
     const [isDataLoading, setIsDataLoading] = useState(true);
 
@@ -25,11 +26,16 @@ const SellerDashboard = () => {
 
         const fetchData = async () => {
             try {
-                const { data } = await axios.get('/api/order/seller');
-                if (data.success) {
+                // Fetch Orders and Payouts Concurrently!
+                const [orderRes, payoutRes] = await Promise.all([
+                    axios.get('/api/order/seller'),
+                    axios.get('/api/payout/user')
+                ]);
+
+                if (orderRes.data.success) {
                     let earnings = 0;
                     let clearing24h = 0; 
-                    const orders = data.orders;
+                    const orders = orderRes.data.orders;
                     const chartMap = {};
                     
                     setRecentOrders(orders.slice(0, 10)); // Save the last 10 for the UI table
@@ -69,6 +75,10 @@ const SellerDashboard = () => {
                     const chartArray = Object.keys(chartMap).map(date => ({ date, amount: chartMap[date] }));
                     setGraphData(chartArray);
                 }
+
+                if (payoutRes.data.success) {
+                    setPayoutsList(payoutRes.data.payouts.slice(0, 5)); // Show last 5 payouts
+                }
             } catch (error) { 
                 console.error("Dashboard Fetch Error:", error);
                 toast.error("Failed to load dashboard data");
@@ -95,6 +105,8 @@ const SellerDashboard = () => {
                     availableBalance: 0, 
                     pendingBalance: prev.pendingBalance + prev.availableBalance 
                 }));
+                // Instantly inject the new request into the visible history table
+                setPayoutsList(prev => [{ amount: stats.availableBalance, status: 'pending', requestDate: new Date().toISOString(), _id: 'temp-'+Date.now() }, ...prev]);
             } else {
                 toast.error(data.message, { id: loadToast });
             }
@@ -242,6 +254,46 @@ const SellerDashboard = () => {
                                         <td className="p-4">
                                             <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
                                                 {order.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </motion.div>
+
+            {/* 🟢 NEW: WITHDRAWAL HISTORY TABLE */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                    <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2"><Wallet size={20} className="text-emerald-500" /> Withdrawal History</h3>
+                </div>
+                
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[600px]">
+                        <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs uppercase font-black tracking-wider">
+                            <tr>
+                                <th className="p-4 rounded-tl-2xl">Ref ID</th>
+                                <th className="p-4">Requested On</th>
+                                <th className="p-4">Amount</th>
+                                <th className="p-4 rounded-tr-2xl">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50 text-sm font-medium text-slate-700">
+                            {isDataLoading ? (
+                                <tr><td colSpan="4" className="p-8 text-center text-slate-400">Loading payouts...</td></tr>
+                            ) : payoutsList.length === 0 ? (
+                                <tr><td colSpan="4" className="p-8 text-center text-slate-400">No previous withdrawals found.</td></tr>
+                            ) : (
+                                payoutsList.map((payout, idx) => (
+                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="p-4 text-xs font-mono text-slate-500">{payout._id.slice(-8)}</td>
+                                        <td className="p-4 text-slate-600">{new Date(payout.requestDate).toLocaleDateString()}</td>
+                                        <td className="p-4 font-black text-slate-900">{currency}{payout.amount}</td>
+                                        <td className="p-4">
+                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${payout.status === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : payout.status === 'rejected' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
+                                                {payout.status}
                                             </span>
                                         </td>
                                     </tr>
