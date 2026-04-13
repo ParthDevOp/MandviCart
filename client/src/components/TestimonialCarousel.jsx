@@ -6,37 +6,37 @@ const TestimonialCarousel = () => {
   const testimonials = [
     {
       _id: 1,
-      name: "Aditi Desai",
-      role: "Working Mother",
-      image: "https://i.pravatar.cc/150?u=aditidesai",
-      text: "Mandvi Cart has completely changed how I shop for groceries. The lightning-fast delivery is a lifesaver, and the vegetables are always farm-fresh!",
+      name: "Priya Sharma",
+      role: "Working Mother & Teacher",
+      image: "https://randomuser.me/api/portraits/women/44.jpg",
+      text: "Managing a full-time job and household chores used to be exhausting. MandviCart delivers fresh vegetables and daily essentials to my doorstep in 15 minutes. It's completely replaced my weekend sabzi mandi visits.",
       rating: 5,
       verified: true
     },
     {
       _id: 2,
-      name: "Rahul Mehta",
+      name: "Rajesh Verma",
       role: "Software Engineer",
-      image: "https://i.pravatar.cc/150?u=rahulm",
-      text: "The app interface is buttery smooth and the pricing is much better than my local supermarkets. The order accuracy is 100% every single time.",
+      image: "https://randomuser.me/api/portraits/men/32.jpg",
+      text: "The UPI integration is seamless and they often have better discounts than the big chain supermarkets. I love that I can support local Kirana vendors through a beautifully built, modern app.",
       rating: 5,
       verified: true
     },
     {
       _id: 3,
-      name: "Sneha Kapoor",
-      role: "Fitness Enthusiast",
-      image: "https://i.pravatar.cc/150?u=snehak",
-      text: "Finding authentic organic produce was always a hassle until I found Mandvi Cart. Their healthy snacks and fresh dairy section is absolutely top-notch.",
+      name: "Ananya Patel",
+      role: "Freelance Designer",
+      image: "https://randomuser.me/api/portraits/women/68.jpg",
+      text: "I am extremely particular about the quality of my organic produce. Since I switched to MandviCart, the sorting and quality checks on their fresh fruits and dairy have been flawless every single time.",
       rating: 5,
       verified: true
     },
     {
       _id: 4,
-      name: "Vikram Singhania",
-      role: "Cafe Owner",
-      image: "https://i.pravatar.cc/150?u=vikrams",
-      text: "We rely on Mandvi Cart for our last-minute kitchen restocks. The delivery riders are always polite, prompt, and the packaging is exceptionally secure.",
+      name: "Amit Chawla",
+      role: "Cloud Kitchen Owner",
+      image: "https://randomuser.me/api/portraits/men/45.jpg",
+      text: "As someone running a food business, timely ingredient delivery is critical. MandviCart’s riders are incredibly polite and have never missed a morning restock. An absolute game-changer for daily supplies.",
       rating: 5,
       verified: true
     }

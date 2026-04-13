@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, Suspense, lazy } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 
@@ -16,58 +16,58 @@ import GlobalCartAnimation from './components/GlobalCartAnimation'
 import PageLoader from './components/PageLoader' // 🟢 NEW GLOBAL PAGE LOADER IMPORT
 
 // --- PUBLIC PAGES ---
-import Home from './pages/Home'
-import About from './pages/About' 
-import Collection from './pages/Collection'
-import Product from './pages/Product'
-import Contact from './pages/Contact'
-import Banned from './pages/Banned'
+const Home = lazy(() => import('./pages/Home'))
+const About = lazy(() => import('./pages/About'))
+const Collection = lazy(() => import('./pages/Collection'))
+const Product = lazy(() => import('./pages/Product'))
+const Contact = lazy(() => import('./pages/Contact'))
+const Banned = lazy(() => import('./pages/Banned'))
 
 // --- CUSTOMER PAGES ---
-import Cart from './pages/Cart'
-import MyOrders from './pages/MyOrders'
-import MyProfile from './pages/MyProfile'
-import AddAddress from './pages/AddAddress'
+const Cart = lazy(() => import('./pages/Cart'))
+const MyOrders = lazy(() => import('./pages/MyOrders'))
+const MyProfile = lazy(() => import('./pages/MyProfile'))
+const AddAddress = lazy(() => import('./pages/AddAddress'))
 
 // --- DASHBOARD LAYOUTS ---
-import SuperLayout from './pages/superadmin/SuperLayout'
-import AdminLayout from './pages/admin/AdminLayout'
-import SellerLayout from './pages/seller/SellerLayout'
-import RiderLayout from './pages/rider/RiderLayout' 
+const SuperLayout = lazy(() => import('./pages/superadmin/SuperLayout'))
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
+const SellerLayout = lazy(() => import('./pages/seller/SellerLayout'))
+const RiderLayout = lazy(() => import('./pages/rider/RiderLayout'))
 
 // --- SUPER ADMIN PAGES ---
-import SuperDashboard from './pages/superadmin/SuperDashboard'
-import AllAdmins from './pages/superadmin/AllAdmins'
-import SuperUsers from './pages/superadmin/SuperUserManage'
-import SuperPayouts from './pages/superadmin/SuperPayouts'
-import SuperContent from './pages/superadmin/SuperContent'
-import SuperChatMonitor from './pages/superadmin/SuperChatMonitor'
-import SystemSettings from './pages/superadmin/SystemSettings'
-import SuperNotifications from './pages/superadmin/SuperNotifications'
-import ActivityLogs from './pages/superadmin/ActivityLogs'
+const SuperDashboard = lazy(() => import('./pages/superadmin/SuperDashboard'))
+const AllAdmins = lazy(() => import('./pages/superadmin/AllAdmins'))
+const SuperUsers = lazy(() => import('./pages/superadmin/SuperUserManage'))
+const SuperPayouts = lazy(() => import('./pages/superadmin/SuperPayouts'))
+const SuperContent = lazy(() => import('./pages/superadmin/SuperContent'))
+const SuperChatMonitor = lazy(() => import('./pages/superadmin/SuperChatMonitor'))
+const SystemSettings = lazy(() => import('./pages/superadmin/SystemSettings'))
+const SuperNotifications = lazy(() => import('./pages/superadmin/SuperNotifications'))
+const ActivityLogs = lazy(() => import('./pages/superadmin/ActivityLogs'))
 
 // --- ADMIN PAGES ---
-import AdminDashboard from './pages/admin/AdminDashboard'
-import AdminOrders from './pages/admin/AdminOrders'
-import AdminProducts from './pages/admin/AdminProducts'
-import AllRiders from './pages/admin/AllRiders'
-import AllSellers from './pages/admin/AllSellers'
-import AllUsers from './pages/admin/AllUsers'
-import AdminChat from './pages/admin/AdminChat'
-import EditProductAdmin from './pages/admin/EditProduct'
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'))
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'))
+const AllRiders = lazy(() => import('./pages/admin/AllRiders'))
+const AllSellers = lazy(() => import('./pages/admin/AllSellers'))
+const AllUsers = lazy(() => import('./pages/admin/AllUsers'))
+const AdminChat = lazy(() => import('./pages/admin/AdminChat'))
+const EditProductAdmin = lazy(() => import('./pages/admin/EditProduct'))
 
 // --- SELLER PAGES ---
-import SellerDashboard from './pages/seller/SellerDashboard'
-import AddProduct from './pages/seller/AddProduct'
-import ProductList from './pages/seller/ProductList'
-import SellerOrders from './pages/seller/Orders'
-import EditProduct from './pages/seller/EditProduct'
+const SellerDashboard = lazy(() => import('./pages/seller/SellerDashboard'))
+const AddProduct = lazy(() => import('./pages/seller/AddProduct'))
+const ProductList = lazy(() => import('./pages/seller/ProductList'))
+const SellerOrders = lazy(() => import('./pages/seller/Orders'))
+const EditProduct = lazy(() => import('./pages/seller/EditProduct'))
 
 // --- RIDER PAGES ---
-import RiderDashboard from './pages/rider/RiderDashboard'
-import AvailableJobs from './pages/rider/AvailableJobs'
-import ActiveDelivery from './pages/rider/ActiveDelivery'
-import RiderWallet from './pages/rider/RiderWallet'
+const RiderDashboard = lazy(() => import('./pages/rider/RiderDashboard'))
+const AvailableJobs = lazy(() => import('./pages/rider/AvailableJobs'))
+const ActiveDelivery = lazy(() => import('./pages/rider/ActiveDelivery'))
+const RiderWallet = lazy(() => import('./pages/rider/RiderWallet'))
 
 // ==========================================
 // 🛡️ SECURITY GUARDS (ROUTE PROTECTION)
@@ -159,78 +159,80 @@ const App = () => {
       {!shouldHideNav && <ChatWidget />}
 
       <div className={`relative z-10 ${!shouldHideNav ? 'pt-24' : ''}`}>
-        <Routes>
-          
-          <Route path='/' element={<IntroGuard><ZoomIntro /></IntroGuard>} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            
+            <Route path='/' element={<IntroGuard><ZoomIntro /></IntroGuard>} />
 
-          {/* ================= PUBLIC ROUTES (Guarded against Staff) ================= */}
-          <Route path='/home' element={<PublicGuard><Home /></PublicGuard>} />
-          <Route path='/about' element={<PublicGuard><About /></PublicGuard>} /> 
-          <Route path='/products' element={<PublicGuard><Collection /></PublicGuard>} />
-          <Route path='/products/:category' element={<PublicGuard><Collection /></PublicGuard>} />
-          <Route path='/product/:productId' element={<PublicGuard><Product /></PublicGuard>} />
-          <Route path='/contact' element={<PublicGuard><Contact /></PublicGuard>} />
-          <Route path='/banned' element={<Banned />} />
+            {/* ================= PUBLIC ROUTES (Guarded against Staff) ================= */}
+            <Route path='/home' element={<PublicGuard><Home /></PublicGuard>} />
+            <Route path='/about' element={<PublicGuard><About /></PublicGuard>} /> 
+            <Route path='/products' element={<PublicGuard><Collection /></PublicGuard>} />
+            <Route path='/products/:category' element={<PublicGuard><Collection /></PublicGuard>} />
+            <Route path='/product/:productId' element={<PublicGuard><Product /></PublicGuard>} />
+            <Route path='/contact' element={<PublicGuard><Contact /></PublicGuard>} />
+            <Route path='/banned' element={<Banned />} />
 
-          {/* ================= CUSTOMER ROUTES (Requires Login) ================= */}
-          <Route path='/cart' element={<CustomerGuard><Cart /></CustomerGuard>} />
-          <Route path='/my-orders' element={<CustomerGuard><MyOrders /></CustomerGuard>} />
-          <Route path='/profile' element={<CustomerGuard><MyProfile /></CustomerGuard>} />
-          <Route path='/add-address' element={<CustomerGuard><AddAddress /></CustomerGuard>} />
+            {/* ================= CUSTOMER ROUTES (Requires Login) ================= */}
+            <Route path='/cart' element={<CustomerGuard><Cart /></CustomerGuard>} />
+            <Route path='/my-orders' element={<CustomerGuard><MyOrders /></CustomerGuard>} />
+            <Route path='/profile' element={<CustomerGuard><MyProfile /></CustomerGuard>} />
+            <Route path='/add-address' element={<CustomerGuard><AddAddress /></CustomerGuard>} />
 
-          {/* ================= 👑 SUPER ADMIN ROUTES ================= */}
-          <Route path='/superadmin' element={<RoleGuard allowedRoles={['superadmin']}><SuperLayout /></RoleGuard>}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path='dashboard' element={<SuperDashboard />} />
-              <Route path='admins' element={<AllAdmins />} />
-              <Route path='users' element={<SuperUsers />} />
-              <Route path='payouts' element={<SuperPayouts />} />
-              <Route path='content' element={<SuperContent />} />
-              <Route path='chat' element={<SuperChatMonitor />} />
-              <Route path='logs' element={<ActivityLogs />} />
-              <Route path='settings' element={<SystemSettings />} />
-              <Route path='notifications' element={<SuperNotifications />} />
-          </Route>
+            {/* ================= 👑 SUPER ADMIN ROUTES ================= */}
+            <Route path='/superadmin' element={<RoleGuard allowedRoles={['superadmin']}><SuperLayout /></RoleGuard>}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path='dashboard' element={<SuperDashboard />} />
+                <Route path='admins' element={<AllAdmins />} />
+                <Route path='users' element={<SuperUsers />} />
+                <Route path='payouts' element={<SuperPayouts />} />
+                <Route path='content' element={<SuperContent />} />
+                <Route path='chat' element={<SuperChatMonitor />} />
+                <Route path='logs' element={<ActivityLogs />} />
+                <Route path='settings' element={<SystemSettings />} />
+                <Route path='notifications' element={<SuperNotifications />} />
+            </Route>
 
-          {/* ================= 🔵 ADMIN ROUTES ================= */}
-          <Route path='/admin' element={<RoleGuard allowedRoles={['admin', 'superadmin']}><AdminLayout /></RoleGuard>}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path='dashboard' element={<AdminDashboard />} />
-              <Route path='orders' element={<AdminOrders />} />
-              <Route path='products' element={<AdminProducts />} />
-              <Route path='users' element={<AllUsers />} />
-              <Route path='riders' element={<AllRiders />} />
-              <Route path='sellers' element={<AllSellers />} />
-              <Route path='content' element={<SuperContent />} /> 
-              <Route path='chat' element={<AdminChat />} />
-              <Route path='add-product' element={<AddProduct />} />
-              <Route path='edit-product/:productId' element={<EditProductAdmin />} />
-          </Route>
+            {/* ================= 🔵 ADMIN ROUTES ================= */}
+            <Route path='/admin' element={<RoleGuard allowedRoles={['admin', 'superadmin']}><AdminLayout /></RoleGuard>}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path='dashboard' element={<AdminDashboard />} />
+                <Route path='orders' element={<AdminOrders />} />
+                <Route path='products' element={<AdminProducts />} />
+                <Route path='users' element={<AllUsers />} />
+                <Route path='riders' element={<AllRiders />} />
+                <Route path='sellers' element={<AllSellers />} />
+                <Route path='content' element={<SuperContent />} /> 
+                <Route path='chat' element={<AdminChat />} />
+                <Route path='add-product' element={<AddProduct />} />
+                <Route path='edit-product/:productId' element={<EditProductAdmin />} />
+            </Route>
 
-          {/* ================= 🟣 SELLER ROUTES ================= */}
-          <Route path='/seller' element={<RoleGuard allowedRoles={['seller']}><SellerLayout /></RoleGuard>}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path='dashboard' element={<SellerDashboard />} />
-              <Route path='add-product' element={<AddProduct />} />
-              <Route path='product-list' element={<ProductList />} />
-              <Route path='orders' element={<SellerOrders />} />
-              <Route path='profile' element={<MyProfile />} />
-              <Route path='edit-product/:productId' element={<EditProduct />} />
-          </Route>
+            {/* ================= 🟣 SELLER ROUTES ================= */}
+            <Route path='/seller' element={<RoleGuard allowedRoles={['seller']}><SellerLayout /></RoleGuard>}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path='dashboard' element={<SellerDashboard />} />
+                <Route path='add-product' element={<AddProduct />} />
+                <Route path='product-list' element={<ProductList />} />
+                <Route path='orders' element={<SellerOrders />} />
+                <Route path='profile' element={<MyProfile />} />
+                <Route path='edit-product/:productId' element={<EditProduct />} />
+            </Route>
 
-          {/* ================= 🟠 RIDER ROUTES ================= */}
-          <Route path='/rider' element={<RoleGuard allowedRoles={['rider']}><RiderLayout /></RoleGuard>}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path='dashboard' element={<RiderDashboard />} />
-              <Route path='jobs' element={<AvailableJobs />} />
-              <Route path='active' element={<ActiveDelivery />} />
-              <Route path='history' element={<RiderWallet />} />
-              <Route path='profile' element={<MyProfile />} />
-          </Route>
+            {/* ================= 🟠 RIDER ROUTES ================= */}
+            <Route path='/rider' element={<RoleGuard allowedRoles={['rider']}><RiderLayout /></RoleGuard>}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path='dashboard' element={<RiderDashboard />} />
+                <Route path='jobs' element={<AvailableJobs />} />
+                <Route path='active' element={<ActiveDelivery />} />
+                <Route path='history' element={<RiderWallet />} />
+                <Route path='profile' element={<MyProfile />} />
+            </Route>
 
-          <Route path='*' element={<Navigate to="/home" replace />} />
+            <Route path='*' element={<Navigate to="/home" replace />} />
 
-        </Routes>
+          </Routes>
+        </Suspense>
       </div>
       
       {!shouldHideNav && <Footer />}
