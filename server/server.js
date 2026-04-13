@@ -57,6 +57,9 @@ const io = new Server(httpServer, {
   }
 });
 
+// 🟢 Attach IO to app so controllers can trigger real-time Admin events
+app.set("io", io);
+
 // ==========================================
 // 🚀 REAL-TIME TRACKING ENGINE (SOCKET.IO)
 // ==========================================

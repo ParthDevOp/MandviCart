@@ -20,7 +20,9 @@ const getMainSellerId = (items) => {
 const geocodeAddress = async (addrObj) => {
     try {
         if (!addrObj || !addrObj.city) return null;
-        const query = `${addrObj.line1}, ${addrObj.city}, ${addrObj.state}, ${addrObj.zip}`;
+        const street = addrObj.street || addrObj.line1;
+        const zip = addrObj.zipcode || addrObj.zip;
+        const query = `${street}, ${addrObj.city}, ${addrObj.state}, ${zip}`;
         
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
         const data = await response.json();

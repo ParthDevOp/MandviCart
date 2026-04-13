@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
     accountNumber: { type: String, default: '' },
     ifsc: { type: String, default: '' }
   },
+  availableBalance: { type: Number, default: 0 },
   pendingWithdrawals: { type: Number, default: 0 }, 
   totalWithdrawn: { type: Number, default: 0 },    
 

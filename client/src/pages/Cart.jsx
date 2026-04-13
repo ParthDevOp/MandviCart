@@ -12,11 +12,8 @@ import emptyCartAnimation from "../assets/empty.json";
 const MIN_ORDER_AMOUNT = 100;
 const MAX_ORDER_AMOUNT = 10000;
 
-const DELIVERY_FEE = 40;
-const FREE_DELIVERY_THRESHOLD = 500;
-
 const Cart = () => {
-    const { products, currency, cartItems, getCartCount, updateQuantity, getCartAmount, axios, user, setCartItems, token, addToCart, setShowUserLogin } = useAppContext();
+    const { systemSettings, products, currency, cartItems, getCartCount, updateQuantity, getCartAmount, axios, user, setCartItems, token, addToCart, setShowUserLogin } = useAppContext();
     const navigate = useNavigate();
     
     const [cartArray, setCartArray] = useState([]);
@@ -73,7 +70,7 @@ const Cart = () => {
     const rawSubtotal = getCartAmount();
     const subtotal = Number(rawSubtotal) || 0;
     
-    const deliveryCharge = (subtotal > 0 && subtotal < FREE_DELIVERY_THRESHOLD) ? DELIVERY_FEE : 0;
+    const deliveryCharge = (subtotal > 0 && subtotal < systemSettings.freeDeliveryThreshold) ? systemSettings.deliveryFee : 0;
     
     const totalAmount = subtotal + deliveryCharge;
     const amountShort = MIN_ORDER_AMOUNT - totalAmount;
@@ -319,7 +316,7 @@ const Cart = () => {
                     <div className="space-y-3 text-sm text-gray-600 mb-6">
                         <div className="flex justify-between"><span>Item Total</span><span className="font-medium text-gray-900">{currency}{subtotal}</span></div>
                         <div className="flex justify-between">
-                            <span>Delivery Fee ({subtotal >= FREE_DELIVERY_THRESHOLD ? 'Free' : 'Flat Rate'})</span>
+                            <span>Delivery Fee ({subtotal >= systemSettings.freeDeliveryThreshold ? 'Free' : 'Flat Rate'})</span>
                             <span className={`font-medium ${deliveryCharge === 0 ? "text-green-600" : "text-gray-900"}`}>{currency}{deliveryCharge}</span>
                         </div>
                         <div className="border-t border-dashed border-gray-200 my-4"></div>
@@ -368,7 +365,7 @@ const Cart = () => {
                     <div className="grid grid-cols-3 gap-2 mt-6">
                         <div className="flex flex-col items-center justify-center text-center p-3 border border-slate-100 rounded-xl bg-gray-50/80">
                             <Truck className="text-emerald-500 mb-1.5" size={18} />
-                            <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Free Delivery<br/>Above ₹500</span>
+                            <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">Free Delivery<br/>Above {currency}{systemSettings.freeDeliveryThreshold}</span>
                         </div>
                         <div className="flex flex-col items-center justify-center text-center p-3 border border-slate-100 rounded-xl bg-gray-50/80">
                             <Zap className="text-emerald-500 mb-1.5" size={18} />

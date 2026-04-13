@@ -16,6 +16,7 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://mandvicart-backe
     const [token, setToken] = useState(() => localStorage.getItem('token') || false);
     const [user, setUser] = useState(null);
     const [role, setRole] = useState(() => localStorage.getItem('role') || 'user');
+    const [systemSettings, setSystemSettings] = useState({ deliveryFee: 40, freeDeliveryThreshold: 400 });
     
     const [products, setProducts] = useState([]);
     const [cartItems, setCartItems] = useState(() => {
@@ -155,6 +156,16 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://mandvicart-backe
         } catch (error) { console.error("Failed to fetch products:", error); }
     }, [api]);
 
+    const fetchSettings = useCallback(async () => {
+        try {
+            // Note: Settings route expects '/api/settings'
+            const { data } = await api.get('/api/settings');
+            if (data.success && data.settings) {
+                setSystemSettings(data.settings);
+            }
+        } catch (error) { console.error("Failed to fetch settings:", error); }
+    }, [api]);
+
     const fetchUserProfile = useCallback(async () => {
         try {
             const storedToken = localStorage.getItem('token');
@@ -254,7 +265,7 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://mandvicart-backe
     // ==========================================
     // 🔄 LIFECYCLE EFFECTS
     // ==========================================
-    useEffect(() => { fetchProducts(); }, [fetchProducts]);
+    useEffect(() => { fetchProducts(); fetchSettings(); }, [fetchProducts, fetchSettings]);
 
     useEffect(() => {
         if (token && !user) {
@@ -273,6 +284,7 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://mandvicart-backe
         showUserLogin, setShowUserLogin, logout,
         fetchUserProfile,
         products, fetchProducts, 
+        systemSettings, fetchSettings,
         search, setSearch, showSearch, setShowSearch,
         cartItems, setCartItems, 
         addToCart, updateQuantity, getCartCount, getCartAmount, 
