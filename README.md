@@ -74,22 +74,9 @@ cd MandviCart
 ### 2. Environment Configuration (⚠️ REQUIRED)
 > **SECURITY NOTICE:** Dedicated `.env` files are intentionally excluded from this repository. MandviCart handles dynamic commission splits and requires secure credentialing to operate locally.
 
-You must create your own `.env` files in both the `/client` and `/server` directories using the following structure:
 
-#### `server/.env`
-```env
-PORT=4000
-MONGODB_URI=your_mongodb_connection_string
-CLOUDINARY_CLOUD_NAME=your_cloudinary_name
-CLOUDINARY_API_KEY=your_cloudinary_key
-CLOUDINARY_API_SECRET=your_cloudinary_secret
-FRONTEND_URL=http://localhost:5173
-```
 
-#### `client/.env`
-```env
-VITE_BACKEND_URL=http://localhost:4000
-```
+
 
 ### 3. Start the Backend Server
 ```bash
