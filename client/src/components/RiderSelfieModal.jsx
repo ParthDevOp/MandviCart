@@ -1,8 +1,8 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js'; 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, X, CheckCircle, ShieldCheck, Loader2, ScanFace, Target } from 'lucide-react';
+import { X, Check, ShieldCheck, Loader2, ScanFace, Target, Lightbulb, LightbulbOff } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
 
@@ -17,6 +17,10 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
     const [scanResult, setScanResult] = useState(null); 
     const [cameraReady, setCameraReady] = useState(false);
     const [activeScore, setActiveScore] = useState(0);
+    
+    // New Feature States
+    const [ringLightOn, setRingLightOn] = useState(false);
+    const [analyzingPhase, setAnalyzingPhase] = useState(false);
 
     const videoConstraints = { width: 720, height: 720, facingMode: "user" };
 
@@ -31,7 +35,6 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                     faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
                 ]);
                 
-                // Pre-compute Rider's Official Profile Facial Descriptor
                 if (user?.profileImage) {
                     const refImgElement = await faceapi.fetchImage(user.profileImage);
                     const refDetection = await faceapi.detectSingleFace(refImgElement).withFaceLandmarks().withFaceDescriptor();
@@ -54,6 +57,8 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
         if (isOpen) {
             setScanResult(null);
             setCameraReady(false);
+            setAnalyzingPhase(false);
+            setRingLightOn(false);
             loadModelsAndProfile();
         }
         return () => { isMounted = false; };
@@ -62,21 +67,20 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
     // Live Video Feed Recognition Loop
     useEffect(() => {
         let interval;
-        if (isOpen && modelsLoaded && refDescriptor && cameraReady) {
+        if (isOpen && modelsLoaded && refDescriptor && cameraReady && !scanResult && !analyzingPhase) {
             interval = setInterval(async () => {
                 if (webcamRef.current && webcamRef.current.video && webcamRef.current.video.readyState === 4) {
                     const video = webcamRef.current.video;
                     
                     try {
-                        // Run inference
                         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
                         
                         if (detection) {
                             const distance = faceapi.euclideanDistance(refDescriptor, detection.descriptor);
+                            // Confidence score
                             const matchScore = Math.max(0, Math.min(100, Math.round(100 - (distance / 0.55) * 30)));
                             setActiveScore(matchScore);
                             
-                            // Draw Live Targeting HUD
                             if (canvasRef.current && video.videoWidth > 0 && video.videoHeight > 0) {
                                 const displaySize = { width: video.videoWidth, height: video.videoHeight };
                                 faceapi.matchDimensions(canvasRef.current, displaySize);
@@ -86,28 +90,46 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                 ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                                 
                                 const box = resizedDetection.detection.box;
+                                const isCentered = box.width > 100 && box.height > 100;
+                                const isMatch = distance < 0.50;
+
+                                let boxColor = 'rgba(234, 179, 8, 0.9)'; // scanning (Yellow)
+                                let labelStatus = `Scanning Face...`;
+
+                                if (isCentered && isMatch) {
+                                    boxColor = '#4fbf8b'; // App's primary green
+                                    labelStatus = `${matchScore}% Match!`;
+                                } else if (!isCentered) {
+                                    boxColor = 'rgba(239, 68, 68, 0.9)'; // reposition (Red)
+                                    labelStatus = 'Please move face to center';
+                                } else if (!isMatch) {
+                                    boxColor = 'rgba(249, 115, 22, 0.9)'; // low match (Orange)
+                                    labelStatus = 'Recognizing...';
+                                }
+
                                 const drawBox = new faceapi.draw.DrawBox(box, { 
-                                    label: `${matchScore}% Match`, 
-                                    boxColor: distance < 0.50 ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
-                                    drawLabelOptions: { fontColor: '#ffffff', backgroundColor: distance < 0.50 ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)' }
+                                    label: labelStatus, 
+                                    boxColor: boxColor,
+                                    drawLabelOptions: { fontColor: '#ffffff', backgroundColor: boxColor }
                                 });
                                 drawBox.draw(canvasRef.current);
-                            }
 
-                            // 🔥 AUTO VERIFICATION TRIGGER (< 0.50 distance equals strong match)
-                            if (distance < 0.50) {
-                                clearInterval(interval);
-                                const snap = webcamRef.current.getScreenshot();
-                                setScanResult({ score: matchScore, success: true, image: snap });
-                                
-                                // Delay close to let them see success
-                                setTimeout(() => {
-                                    onVerify({ image: snap, score: matchScore });
-                                }, 1500);
+                                if (isMatch && isCentered) {
+                                    clearInterval(interval);
+                                    
+                                    setAnalyzingPhase(true);
+                                    const snap = webcamRef.current.getScreenshot();
+                                    
+                                    setTimeout(() => {
+                                        setScanResult({ score: matchScore, success: true, image: snap });
+                                        setTimeout(() => {
+                                            onVerify({ image: snap, score: matchScore });
+                                        }, 2000);
+                                    }, 1500); 
+                                }
                             }
                         } else {
                             setActiveScore(0);
-                            // Clear canvas if no face detected
                             if (canvasRef.current) {
                                 const ctx = canvasRef.current.getContext('2d');
                                 ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
@@ -117,105 +139,190 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                          // Safely ignore inference errors during teardown
                     }
                 }
-            }, 600); // ~1.5 FPS to prevent thermal locking on smartphones while retaining real-time feel
+            }, 1000);
         }
         return () => clearInterval(interval);
-    }, [isOpen, modelsLoaded, refDescriptor, cameraReady, onVerify]);
+    }, [isOpen, modelsLoaded, refDescriptor, cameraReady, onVerify, scanResult, analyzingPhase]);
 
     const handleUserMedia = () => setCameraReady(true);
+
+    const toggleRingLight = async () => {
+        const toggleValue = !ringLightOn;
+        setRingLightOn(toggleValue);
+        
+        try {
+            const track = webcamRef.current?.video?.srcObject?.getVideoTracks()[0];
+            if (track) {
+                // If device supports actual torch, use it as well
+                const capabilities = track.getCapabilities?.() || {};
+                if (capabilities.torch) {
+                    await track.applyConstraints({
+                        advanced: [{ torch: toggleValue }]
+                    });
+                }
+            }
+        } catch (err) {
+            console.log("Torch access error or unsupposed (falling back to screen Ring Light)", err);
+        }
+    };
 
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 font-outfit">
+                <div className={`fixed inset-0 z-[1000] flex items-center justify-center p-4 font-outfit transition-colors duration-500 ${ringLightOn ? 'bg-white' : 'bg-slate-900/90 backdrop-blur-md'}`}>
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden flex flex-col"
+                        className={`w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden flex flex-col relative transition-colors duration-500 ${ringLightOn ? 'bg-white shadow-[0_0_50px_rgba(255,255,255,0.8)] border border-slate-100' : 'bg-white'}`}
                     >
                         {/* Header */}
-                        <div className="bg-slate-50 p-5 border-b border-slate-100 flex justify-between items-center z-10">
+                        <div className={`p-5 flex justify-between items-center z-10 transition-colors ${ringLightOn ? 'bg-white border-b border-slate-100' : 'bg-slate-50 border-b border-slate-100'}`}>
                             <div>
                                 <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
-                                    <ShieldCheck className="text-emerald-600" /> Biometric Sync
+                                    <ShieldCheck className="text-primary" /> Identity Sync
                                 </h3>
                                 <p className="text-xs font-medium text-slate-500 mt-1">Live Facial Verification Module</p>
                             </div>
-                            <button onClick={onClose} disabled={scanResult} className="p-2 bg-white hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full transition-colors border border-slate-200">
-                                <X size={18} />
-                            </button>
-                        </div>
-
-                        {/* Scanner Viewport */}
-                        <div className="p-6 flex flex-col items-center justify-center bg-slate-800 relative h-96 overflow-hidden">
-                            
-                            {/* Loading State */}
-                            {(!modelsLoaded || !refDescriptor) ? (
-                                <div className="w-64 h-64 rounded-full flex flex-col items-center justify-center bg-slate-900 shadow-inner text-emerald-500 border-4 border-slate-700 relative z-20">
-                                    <Loader2 className="animate-spin mb-2" size={32} />
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-2 text-center px-4">Loading Neural Network...</p>
-                                </div>
-                            ) : (
-                                <div className="relative w-72 h-72 rounded-full overflow-hidden border-4 border-slate-700 shadow-xl bg-black flex items-center justify-center z-20">
-                                    
-                                    {/* Scan Success Overlay */}
-                                    {scanResult ? (
-                                        <div className="absolute inset-0 z-40 bg-emerald-500/90 backdrop-blur-sm flex flex-col items-center justify-center">
-                                            <CheckCircle className="text-white mb-2" size={48} />
-                                            <span className="text-white font-black text-2xl tracking-widest">{scanResult.score}%</span>
-                                            <span className="text-emerald-100 text-[10px] uppercase font-bold tracking-widest mt-1">Identity Confirmed</span>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {/* Live Targeting Reticle Layer */}
-                                            <div className="absolute inset-0 pointer-events-none z-30 flex items-center justify-center opacity-30">
-                                                <Target size={200} className="text-emerald-500 animate-pulse" strokeWidth={1} />
-                                            </div>
-
-                                            {/* The Live Video Feed */}
-                                            <Webcam
-                                                audio={false}
-                                                ref={webcamRef}
-                                                onUserMedia={handleUserMedia}
-                                                screenshotFormat="image/jpeg"
-                                                screenshotQuality={1}
-                                                videoConstraints={videoConstraints}
-                                                className="absolute inset-0 w-full h-full object-cover z-10"
-                                                mirrored={true} 
-                                            />
-                                            
-                                            {/* Transparent Canvas for Drawing the `face-api` bounding boxes */}
-                                            <canvas 
-                                                ref={canvasRef} 
-                                                className="absolute inset-0 w-full h-full object-cover z-20"
-                                                style={{ transform: "scaleX(-1)" }} // Mirrors the canvas drawing to match the mirrored webcam
-                                            />
-                                        </>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Background Scanner Glow Effect */}
-                            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-                                <div className="w-full h-[5px] bg-emerald-500 absolute top-0 left-0 animate-[scan_3s_linear_infinite] shadow-[0_0_20px_10px_rgba(16,185,129,0.5)]"></div>
+                            <div className="flex items-center gap-2">
+                                {cameraReady && !scanResult && !analyzingPhase && (
+                                    <button 
+                                        onClick={toggleRingLight}
+                                        className={`p-2 rounded-full transition-all ${
+                                            ringLightOn ? 'bg-primary/20 text-primary shadow-sm border border-primary/30' : 'bg-white text-slate-400 hover:bg-slate-100 border border-slate-200'
+                                        }`}
+                                        title="Toggle Ring Light for Night Scan"
+                                    >
+                                        {ringLightOn ? <Lightbulb size={20} className="fill-current animate-pulse" /> : <LightbulbOff size={20} />}
+                                    </button>
+                                )}
+                                <button onClick={onClose} disabled={scanResult || analyzingPhase} className="p-2 bg-white hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full transition-colors border border-slate-200">
+                                    <X size={20} />
+                                </button>
                             </div>
                         </div>
 
+                        {/* Scanner Viewport */}
+                        <div className={`p-6 flex flex-col items-center justify-center relative h-[400px] overflow-hidden transition-colors duration-500 ${ringLightOn ? 'bg-slate-100' : 'bg-slate-900'}`}>
+                            
+                            {/* Loading State */}
+                            {(!modelsLoaded || !refDescriptor) ? (
+                                <div className={`w-64 h-64 rounded-full flex flex-col items-center justify-center shadow-inner text-primary relative z-20 ${ringLightOn ? 'bg-white border-4 border-slate-200' : 'bg-slate-900 border-4 border-slate-700'}`}>
+                                    <Loader2 className="animate-spin mb-2" size={32} />
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 text-center px-4 ${ringLightOn ? 'text-slate-500' : 'text-slate-400'}`}>Initializing System...</p>
+                                </div>
+                            ) : (
+                                <div className={`relative w-80 h-80 rounded-full overflow-hidden flex items-center justify-center z-20 transition-all duration-300 ${ringLightOn ? 'border-[16px] border-white shadow-[0_0_30px_rgba(255,255,255,0.8)] bg-white' : 'border-[6px] border-slate-700 shadow-2xl bg-black'}`}>
+                                    
+                                    {/* Always Active Live Video Feed */}
+                                    <Webcam
+                                        audio={false}
+                                        ref={webcamRef}
+                                        onUserMedia={handleUserMedia}
+                                        screenshotFormat="image/jpeg"
+                                        screenshotQuality={1}
+                                        videoConstraints={videoConstraints}
+                                        className="absolute inset-0 w-full h-full object-cover z-10"
+                                        mirrored={true} 
+                                    />
+                                    
+                                    {/* Additional Ring Light internal glow effect */}
+                                    {ringLightOn && !(scanResult || analyzingPhase) && (
+                                        <div className="absolute inset-0 z-[15] pointer-events-none rounded-full shadow-[inset_0_0_30px_rgba(255,255,255,0.9)]" />
+                                    )}
+
+                                    {/* Transparent Canvas for face-api boxes. Only show while scanning. */}
+                                    <canvas 
+                                        ref={canvasRef} 
+                                        className="absolute inset-0 w-full h-full object-cover z-20"
+                                        style={{ transform: "scaleX(-1)", display: (scanResult || analyzingPhase) ? 'none' : 'block' }}
+                                    />
+
+                                    {/* Live Targeting Reticle Layer */}
+                                    {!(scanResult || analyzingPhase) && (
+                                        <div className="absolute inset-0 pointer-events-none z-30 flex items-center justify-center opacity-40">
+                                            <Target size={240} className="text-primary animate-[spin_8s_linear_infinite]" strokeWidth={1.5} />
+                                        </div>
+                                    )}
+
+                                    {/* Analyzing Transition Overlay */}
+                                    <AnimatePresence>
+                                        {analyzingPhase && !scanResult && (
+                                            <motion.div 
+                                                initial={{ opacity: 0 }} 
+                                                animate={{ opacity: 1 }} 
+                                                exit={{ opacity: 0 }}
+                                                className={`absolute inset-0 z-40 backdrop-blur-md flex flex-col items-center justify-center ${ringLightOn ? 'bg-white/80' : 'bg-slate-900/80'}`}
+                                            >
+                                                <motion.div 
+                                                    animate={{ rotate: 360 }}
+                                                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                                                    className={`w-16 h-16 border-[3px] rounded-full mb-4 shadow-[0_0_15px_rgba(79,191,139,0.5)] ${ringLightOn ? 'border-primary/20 border-t-primary' : 'border-slate-700 border-t-primary'}`}
+                                                />
+                                                <span className="text-primary font-bold tracking-widest text-sm animate-pulse">ANALYZING PROFILE</span>
+                                                <span className={`text-[10px] mt-2 tracking-wider ${ringLightOn ? 'text-slate-600' : 'text-slate-400'}`}>Please Wait...</span>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    {/* Final Professional Score Overlay */}
+                                    <AnimatePresence>
+                                        {scanResult && (
+                                            <motion.div 
+                                                initial={{ scale: 0.8, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                className="absolute inset-0 z-50 bg-primary flex flex-col items-center justify-center"
+                                            >
+                                                <motion.div
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
+                                                    className="bg-white rounded-full p-3 shadow-xl mb-4"
+                                                >
+                                                    <Check className="text-primary-dull" size={36} strokeWidth={4} />
+                                                </motion.div>
+                                                
+                                                <h4 className="text-white font-black text-4xl tracking-tighter mb-2 shadow-black drop-shadow-md">
+                                                    {scanResult.score}%
+                                                </h4>
+                                                
+                                                <div className="bg-black/10 px-4 py-1.5 rounded-full border border-white/30 backdrop-blur-sm">
+                                                    <span className="text-white text-[10px] uppercase font-bold tracking-widest shadow-black drop-shadow-sm">
+                                                        Access Confirmed
+                                                    </span>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
+                            {/* Ambient Scanning Glow */}
+                            {!ringLightOn && !scanResult && !analyzingPhase && (
+                                <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 z-0">
+                                    <div className="w-full h-2 bg-primary absolute top-0 left-0 animate-[scan_4s_ease-in-out_infinite] shadow-[0_0_30px_15px_rgba(79,191,139,0.4)]"></div>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Status Footer */}
-                        <div className="p-6 bg-slate-900 border-t border-slate-800 flex flex-col items-center">
+                        <div className={`p-6 border-t flex flex-col items-center transition-colors duration-500 ${ringLightOn ? 'bg-white border-slate-100' : 'bg-slate-900 border-slate-800'}`}>
                             {scanResult ? (
-                                <p className="text-emerald-400 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
-                                    Access Granted
+                                <p className="text-primary font-bold uppercase tracking-widest text-sm flex items-center gap-2">
+                                    Identity Verified
+                                </p>
+                            ) : analyzingPhase ? (
+                                <p className="text-primary font-medium text-xs tracking-widest uppercase animate-pulse">
+                                    Processing Biometrics...
                                 </p>
                             ) : (
                                 <>
-                                    <p className="text-slate-400 font-medium text-center text-xs tracking-wide">
-                                        Position your face within the frame. The system will continuously scan & auto-verify you.
+                                    <p className={`font-medium text-center text-xs tracking-wide ${ringLightOn ? 'text-slate-600' : 'text-slate-400'}`}>
+                                        Position your face in the center. The system will auto-capture when aligned.
                                     </p>
-                                    <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-slate-500 bg-slate-800 px-3 py-1.5 rounded-full uppercase tracking-widest border border-slate-700">
-                                        <ScanFace size={14} className={activeScore > 0 ? "text-emerald-500" : "text-slate-500"} /> 
-                                        {activeScore === 0 ? "Searching for Face..." : `Confidence: ${activeScore}%`}
+                                    <div className={`mt-4 flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border transition-colors ${ringLightOn ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
+                                        <ScanFace size={14} className={activeScore > 0 ? "text-primary" : "text-slate-400"} /> 
+                                        {activeScore === 0 ? "Detecting..." : `Confidence Level: ${activeScore}%`}
                                     </div>
                                 </>
                             )}
