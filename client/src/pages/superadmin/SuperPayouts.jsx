@@ -33,7 +33,7 @@ const SuperPayouts = () => {
     useEffect(() => { fetchPayouts(); }, [filter]);
 
     return (
-        <div className="space-y-6 font-outfit pb-20">
+        <div className="space-y-6 pb-20">
             {/* Header & Filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>

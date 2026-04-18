@@ -31,7 +31,7 @@ const SuperNotifications = () => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-8 font-outfit pb-20">
+        <div className="max-w-3xl mx-auto space-y-8 pb-20">
             <div>
                 <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
                     <div className="p-2.5 bg-purple-100 text-purple-600 rounded-xl"><Bell size={24}/></div> 

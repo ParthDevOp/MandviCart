@@ -77,6 +77,24 @@ io.on("connection", (socket) => {
         socket.to(data.orderId).emit("live_location", data);
     });
 
+    // 3. Register global user for generic notifications (Seller/User)
+    socket.on("register_user", (userId) => {
+        if (userId) {
+            socket.join(userId);
+            console.log(`👤 User joined Global Notification Room: ${userId}`);
+        }
+    });
+
+    // 4. Broker Rider Arrivals to the destination party
+    socket.on("rider_arrived", ({ orderId, targetUserId, type }) => {
+        console.log(`🎯 Rider Arrived! Notifying ${type}: ${targetUserId} for order ${orderId}`);
+        socket.to(targetUserId).emit("push_notification", 
+            type === "pickup" 
+                ? `🚲 Your rider has arrived at your store for order #${orderId.slice(-6).toUpperCase()}`
+                : `📦 Your delivery has arrived! Your rider is outside.`
+        );
+    });
+
     socket.on("disconnect", () => {
         console.log(`🔌 Connection Dropped: ${socket.id}`);
     });

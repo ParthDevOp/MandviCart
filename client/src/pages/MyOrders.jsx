@@ -389,7 +389,7 @@ const MyOrders = () => {
                     </div>
                     <div class="address-block" style="text-align: right;">
                         <h3>Payment Details</h3>
-                        <strong>Method: ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</strong>
+                        <strong>Method: ${(order.paymentMethod || '').toLowerCase() === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</strong>
                         <p>Status: ${order.payment ? 'Paid in Full' : 'Cash Required at Delivery'}</p>
                     </div>
                 </div>
@@ -613,8 +613,8 @@ const MyOrders = () => {
                                                 <div className="md:text-right">
                                                     <p className="font-bold text-gray-800 mb-1">Payment Method:</p>
                                                     <p className="text-gray-600 inline-flex items-center gap-1 md:justify-end w-full">
-                                                        {order.paymentMethod === 'cod' ? <Banknote size={14} /> : <CreditCard size={14} />}
-                                                        {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
+                                                        {(order.paymentMethod || '').toLowerCase() === 'cod' ? <Banknote size={14} /> : <CreditCard size={14} />}
+                                                        {(order.paymentMethod || '').toLowerCase() === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
                                                     </p>
                                                     <p className="text-xs mt-1 font-medium">
                                                         Status: <span className={order.payment ? "text-green-600" : "text-orange-500"}>{order.payment ? "Paid" : "Pending"}</span>

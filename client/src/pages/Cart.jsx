@@ -311,18 +311,28 @@ const Cart = () => {
                     </div>
                 )}
 
-                <div className="bg-white p-6 rounded-3xl shadow-lg shadow-gray-100 border border-gray-100 sticky top-24">
-                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Receipt className="text-gray-400"/> Order Summary</h2>
-                    <div className="space-y-3 text-sm text-gray-600 mb-6">
-                        <div className="flex justify-between"><span>Item Total</span><span className="font-medium text-gray-900">{currency}{subtotal}</span></div>
-                        <div className="flex justify-between">
-                            <span>Delivery Fee ({subtotal >= systemSettings.freeDeliveryThreshold ? 'Free' : 'Flat Rate'})</span>
-                            <span className={`font-medium ${deliveryCharge === 0 ? "text-green-600" : "text-gray-900"}`}>{currency}{deliveryCharge}</span>
+                <div className="bg-[#fbfcff] p-7 rounded-[2rem] shadow-[0_15px_40px_rgba(0,0,0,0.04)] border border-blue-100/50 sticky top-24">
+                    <h2 className="text-2xl font-black mb-6 flex items-center gap-2 text-slate-800"><ShoppingBag className="text-emerald-500" strokeWidth={2.5}/> Order Summary</h2>
+                    <div className="space-y-4 text-sm font-medium text-slate-500 mb-6">
+                        <div className="flex justify-between items-center"><span>Merchandise Subtotal</span><span className="font-bold text-slate-800">{currency}{subtotal.toFixed(2)}</span></div>
+                        <div className="flex justify-between items-center">
+                            <span>Delivery Partner Fee</span>
+                            <span className={`font-bold ${deliveryCharge === 0 ? "text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md" : "text-slate-800"}`}>
+                                {deliveryCharge === 0 ? 'FREE' : `${currency}${deliveryCharge.toFixed(2)}`}
+                            </span>
                         </div>
-                        <div className="border-t border-dashed border-gray-200 my-4"></div>
-                        <div className="flex justify-between text-lg font-bold text-gray-900"><span>Total to Pay</span><span>{currency}{totalAmount}</span></div>
                         
-                        {totalAmount > MAX_ORDER_AMOUNT && <p className="text-red-500 text-xs font-bold mt-1 text-center bg-red-50 p-2 rounded-lg">Maximum order limit is {currency}10,000</p>}
+                        <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent my-5"></div>
+                        
+                        <div className="flex justify-between items-end">
+                            <div>
+                                <span className="text-xl font-black text-slate-900 block">Grand Total</span>
+                                <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Includes all taxes</span>
+                            </div>
+                            <span className="text-3xl font-black text-emerald-600 tracking-tight">{currency}{totalAmount.toFixed(2)}</span>
+                        </div>
+                        
+                        {totalAmount > MAX_ORDER_AMOUNT && <p className="text-red-500 text-xs font-bold mt-3 text-center bg-red-50 p-2.5 rounded-xl border border-red-100">Maximum order limit is {currency}10,000</p>}
                     </div>
 
                     <div className="mb-6">

@@ -20,18 +20,30 @@ const getMainSellerId = (items) => {
 const geocodeAddress = async (addrObj) => {
     try {
         if (!addrObj || !addrObj.city) return null;
+        
+        // 🟢 FIX FOR CHECKOUT LATENCY: Skip geocoding if already provided!
+        if (addrObj.lat && addrObj.lng) {
+            return { lat: parseFloat(addrObj.lat), lng: parseFloat(addrObj.lng) };
+        }
+
         const street = addrObj.street || addrObj.line1;
         const zip = addrObj.zipcode || addrObj.zip;
         const query = `${street}, ${addrObj.city}, ${addrObj.state}, ${zip}`;
         
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        // Abort timeout for slow OSM
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
         const data = await response.json();
         
         if (data && data.length > 0) {
             return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
         }
     } catch (error) {
-        console.error("Geocoding failed:", error.message);
+        console.warn("Geocoding failed/timed out, using mock coordinates.");
     }
     return null;
 };

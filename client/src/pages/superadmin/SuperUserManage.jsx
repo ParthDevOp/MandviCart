@@ -115,7 +115,7 @@ const SuperUserManage = () => {
 
     return (
         // 🟢 CRITICAL FIX: Changed from max-w to w-full min-w-0 to prevent layout blowouts
-        <div className="space-y-6 pb-12 w-full min-w-0 font-outfit">
+        <div className="space-y-6 pb-12 w-full min-w-0">
             
             {/* 🟢 HEADER & METRICS */}
             {/* 🟢 CRITICAL FIX: Removed sticky top to prevent clashing with SuperLayout topbar */}

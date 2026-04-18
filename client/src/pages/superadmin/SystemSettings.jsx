@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import toast from 'react-hot-toast';
-import { Save, DollarSign, Truck, AlertTriangle, RefreshCcw } from 'lucide-react';
+import { Save, IndianRupee, Truck, AlertTriangle, RefreshCcw } from 'lucide-react';
 
 const SystemSettings = () => {
     const { axios } = useAppContext();
@@ -28,7 +28,7 @@ const SystemSettings = () => {
     useEffect(() => { fetchSettings(); }, []);
 
     return (
-        <div className="max-w-3xl mx-auto space-y-8 pb-12 font-outfit">
+        <div className="max-w-3xl mx-auto space-y-8 pb-12">
             <div>
                 <h1 className="text-3xl font-black text-slate-800 tracking-tight">System Configuration</h1>
                 <p className="text-slate-500 mt-1 font-medium">Manage global platform variables and emergency controls.</p>
@@ -39,7 +39,7 @@ const SystemSettings = () => {
                 {/* Financials Card */}
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                     <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg"><DollarSign size={20}/></div> Financials
+                        <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg"><IndianRupee size={20}/></div> Financials
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">

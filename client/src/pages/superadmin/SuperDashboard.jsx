@@ -3,11 +3,11 @@ import { useAppContext } from '../../context/AppContext';
 import { 
     ShieldCheck, Download, TrendingUp, Truck, Store, IndianRupee, 
     Building, ArrowUpRight, ArrowDownRight, ArrowRight, Landmark, Users,
-    Activity, Clock, MapPin, Key, CreditCard, Database, Eye, FileText
+    Activity, Clock, MapPin, Key, CreditCard, Database, Eye, FileText, Package, PackageSearch
 } from 'lucide-react';
 import { 
     PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend,
-    XAxis, YAxis, CartesianGrid, AreaChart, Area
+    XAxis, YAxis, CartesianGrid, AreaChart, Area, BarChart, Bar, LineChart, Line
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -72,6 +72,15 @@ const SuperDashboard = () => {
         { name: 'Online / Wallet', value: 35, color: '#a855f7' }
     ];
 
+    // 🟢 NEW STATS:
+    const inventoryData = [
+        { name: 'In Stock', value: stats?.inventory?.inStock || 0, color: '#10b981' },
+        { name: 'Out of Stock', value: stats?.inventory?.outOfStock || 0, color: '#f43f5e' }
+    ];
+    const topProducts = stats?.topProducts || [];
+    const logisticsData = stats?.logistics || [];
+    const topSellers = stats?.topPartnerBalances?.filter(s => s.role === 'seller').slice(0, 5) || [];
+
     const auditLogs = stats.auditLogs || [
         { admin: "System Auto", action: "Generated daily settlement batch", time: new Date(Date.now() - 1000 * 60 * 5) },
         { admin: "Admin John", action: "Approved Store Registration: FreshFoods", time: new Date(Date.now() - 1000 * 60 * 45) },
@@ -120,7 +129,7 @@ const SuperDashboard = () => {
                 
                 <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                     <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-200 overflow-x-auto custom-scrollbar w-full md:w-auto">
-                        {['financials', 'operations', 'network', 'audit'].map(tab => (
+                        {['financials', 'operations', 'network'].map(tab => (
                             <button 
                                 key={tab} onClick={()=>setActiveTab(tab)} 
                                 className={`whitespace-nowrap flex-1 md:flex-none capitalize px-5 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${activeTab===tab ? 'bg-white text-purple-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
@@ -202,6 +211,22 @@ const SuperDashboard = () => {
                                 </div>
                             </div>
                         </div>
+                        
+                        {/* 🟢 NEW: Top Sellers Bar Chart */}
+                        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                            <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><Store size={16} className="text-purple-600"/> Top Performing Sellers (Revenue)</h3>
+                            <div className="w-full h-[250px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={topSellers} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} dy={10} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} tickFormatter={(val) => `₹${val}`} />
+                                        <RechartsTooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
+                                        <Bar dataKey="availableBalance" name="Earnings" fill="#c084fc" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
                     </motion.div>
                 )}
 
@@ -209,8 +234,66 @@ const SuperDashboard = () => {
                     🟢 TAB 2: LIVE OPERATIONS
                     ========================================== */}
                 {activeTab === 'operations' && (
-                    <motion.div key="operations" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} transition={{ duration: 0.2 }} className="w-full">
+                    <motion.div key="operations" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} transition={{ duration: 0.2 }} className="w-full space-y-6">
                         
+                        {/* 🟢 NEW: Charts Row for Operations */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Inventory Pie */}
+                            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 flex flex-col justify-center min-h-[300px]">
+                                <h3 className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2"><Package size={16} className="text-emerald-600"/> Global Inventory Health</h3>
+                                <div className="w-full h-[180px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={inventoryData} cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={3} dataKey="value" stroke="none">
+                                                {inventoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                                            </Pie>
+                                            <RechartsTooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}/>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <div className="space-y-3 mt-4 border-t border-slate-100 pt-5">
+                                    {inventoryData.map((d, i) => (
+                                        <div key={i} className="flex justify-between items-center text-sm">
+                                            <span className="flex items-center gap-2.5 text-slate-600 font-semibold text-xs"><span className="w-3 h-3 rounded-full shadow-sm border border-white" style={{background: d.color}}></span> {d.name}</span>
+                                            <span className="font-bold text-slate-900 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/60">{d.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            {/* Logistics Status */}
+                            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><Truck size={16} className="text-blue-600"/> Real-Time Logistics Flow</h3>
+                                <div className="w-full h-[250px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={logisticsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 600}} dy={10} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} />
+                                            <RechartsTooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
+                                            <Bar dataKey="count" name="Active Orders" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 🟢 NEW: Top Products */}
+                        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                            <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><PackageSearch size={16} className="text-pink-500"/> Top 7 Trending Products</h3>
+                            <div className="w-full h-[300px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={topProducts} layout="vertical" margin={{ top: 10, right: 10, left: 30, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9"/>
+                                        <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} />
+                                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} width={120}/>
+                                        <RechartsTooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
+                                        <Bar dataKey="sold" name="Units Sold" fill="#f472b6" radius={[0, 4, 4, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden w-full">
                             <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                                 <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2"><Activity size={16} className="text-blue-600"/> Live Dispatch Monitor</h3>
@@ -329,47 +412,6 @@ const SuperDashboard = () => {
                             </div>
                         </div>
 
-                    </motion.div>
-                )}
-
-                {/* ==========================================
-                    🟢 TAB 4: SYSTEM AUDIT
-                    ========================================== */}
-                {activeTab === 'audit' && (
-                    <motion.div key="audit" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} transition={{ duration: 0.2 }} className="w-full">
-                        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden w-full">
-                            <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                                <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2"><Eye size={16} className="text-purple-600"/> Administrator Audit Trail</h3>
-                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-sm">Immutable Ledger</span>
-                            </div>
-                            
-                            {/* 🟢 CRITICAL FIX: localized overflow-x-auto */}
-                            <div className="w-full overflow-x-auto custom-scrollbar">
-                                <table className="w-full text-left border-collapse min-w-[700px]">
-                                    <thead className="bg-white border-b border-slate-200 text-slate-400 text-[10px] uppercase tracking-widest font-bold">
-                                        <tr>
-                                            <th className="p-5 py-4">Authorized Personnel</th>
-                                            <th className="p-5 py-4">Action Performed</th>
-                                            <th className="p-5 py-4 text-right">Timestamp</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
-                                        {auditLogs.map((log, i) => (
-                                            <tr key={i} className="hover:bg-slate-50/80 transition-colors">
-                                                <td className="p-5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 font-black text-[10px] uppercase border border-purple-100">{log.admin.slice(0,2)}</div>
-                                                        <span className="font-bold text-slate-900 text-sm">{log.admin}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="p-5 text-sm text-slate-600">{log.action}</td>
-                                                <td className="p-5 text-right text-[11px] font-mono text-slate-500">{new Date(log.time).toLocaleString()}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
                     </motion.div>
                 )}
 

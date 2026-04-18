@@ -68,7 +68,9 @@ const TrackingMap = ({ order }) => {
     const [progress, setProgress] = useState(0);
     const [riderPosition, setRiderPosition] = useState(pickupLoc);
     const [routeMeta, setRouteMeta] = useState({ distance: '', duration: '' });
+    const [etaSec, setEtaSec] = useState(null);
     const socketRef = useRef(null);
+    const targetNotifiedRef = useRef(false);
 
     // Sockets
     useEffect(() => {
@@ -122,6 +124,22 @@ const TrackingMap = ({ order }) => {
             setProgress(pct * 100);
             const currentPos = getInterpolatedPosition(pathPoints, pct * 100);
             if (currentPos) setRiderPosition(currentPos);
+
+            // 🟢 NEW: ETA Computation
+            const remaining = Math.max(0, Math.ceil((ANIMATION_DURATION - elapsed) / 1000));
+            setEtaSec(remaining);
+
+            // 🟢 NEW: Automated Arrival Notification trigger
+            if (pct >= 1 && !targetNotifiedRef.current) {
+                targetNotifiedRef.current = true;
+                if (socketRef.current) {
+                    socketRef.current.emit("rider_arrived", {
+                        orderId: order._id,
+                        targetUserId: isPickup ? order.sellerId : order.userId,
+                        type: isPickup ? 'pickup' : 'delivery'
+                    });
+                }
+            }
 
             if (pct < 1) animationFrameId = requestAnimationFrame(animate);
         };
@@ -190,7 +208,9 @@ const TrackingMap = ({ order }) => {
                             <div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{isPickup ? 'VALET DISPATCHED' : 'OUT FOR DELIVERY'}</p>
                                 <h3 className="font-black text-slate-800 text-[22px] leading-tight mt-0.5">
-                                    {isPickup ? 'Heading to store' : routeMeta.duration ? `Arriving in ${routeMeta.duration}` : 'Arriving...'}
+                                    {isPickup 
+                                        ? (etaSec !== null ? `Heading to store (${etaSec}s)` : 'Heading to store') 
+                                        : (etaSec !== null ? `Arriving in ${etaSec}s` : 'Arriving...')}
                                 </h3>
                                 {routeMeta.distance && <p className="text-[11px] font-bold text-slate-500 mt-1">{routeMeta.distance} away from your coordinates.</p>}
                             </div>

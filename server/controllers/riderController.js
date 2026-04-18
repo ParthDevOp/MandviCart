@@ -53,7 +53,7 @@ export const getAvailableJobs = async (req, res) => {
 // 🟢 3. Accept a Job (Uploads HD Selfie & Assigns Rider)
 export const acceptJob = async (req, res) => {
     try {
-        const { orderId, verificationImage } = req.body; // Extract the HD selfie from frontend
+        const { orderId, verificationImage, riderMatchScore } = req.body; // Extract the HD selfie from frontend
         const userId = req.userId; 
 
         const order = await orderModel.findById(orderId);
@@ -70,7 +70,7 @@ export const acceptJob = async (req, res) => {
         console.log(`Rider ID: ${userId} | Order ID: ${orderId}`);
         
         if (verificationImage) {
-            console.log("✅ Frontend sent the Base64 image. Uploading to Cloudinary...");
+            console.log(`✅ Frontend sent the Base64 image. Uploading to Cloudinary (Match Score: ${riderMatchScore}%)...`);
             try {
                 const uploadResponse = await cloudinary.uploader.upload(verificationImage, {
                     folder: "rider_verifications", 
@@ -91,6 +91,9 @@ export const acceptJob = async (req, res) => {
         order.status = "Ready for Pickup"; 
         order.acceptedAt = Date.now();     
         order.riderVerificationImage = imageUrl; // 🟢 Saves the link for the Admin Panel
+        if (riderMatchScore) {
+            order.riderMatchScore = riderMatchScore;
+        }
         
         await order.save();
 

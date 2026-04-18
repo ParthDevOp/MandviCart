@@ -54,6 +54,7 @@ const orderSchema = new mongoose.Schema({
     pickupOtp: { type: String, required: true }, // Seller -> Rider handoff
     otp: { type: String, required: true },       // Rider -> Customer handoff
     riderVerificationImage: { type: String, default: "" }, // 🟢 Stores the FaceID selfie for Admin review
+    riderMatchScore: { type: Number }, // 🟢 Stores Face-API Match Confidence Score
     
     // ==========================================
     // ⏱️ TIMESTAMPS (Drives the Map Animation)

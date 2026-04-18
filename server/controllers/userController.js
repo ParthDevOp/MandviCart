@@ -642,6 +642,38 @@ export const getSuperAdminStats = async (req, res) => {
             date: monthNames[item._id.month - 1], revenue: item.revenue, payout: item.platformEarnings 
         }));
 
+        // 🟢 NEW: Inventory Analysis
+        const stockData = await Product.aggregate([
+            { $group: { _id: "$inStock", count: { $sum: 1 } } }
+        ]);
+        const inStockCount = stockData.find(s => s._id === true)?.count || 0;
+        const outOfStockCount = stockData.find(s => s._id === false)?.count || 0;
+
+        // 🟢 NEW: Logistics Status Pipeline
+        const logisticsAgg = await Order.aggregate([
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]);
+        const logisticsStatus = logisticsAgg.map(item => ({
+            name: item._id, count: item.count
+        }));
+
+        // 🟢 NEW: Top Selling Items (unwinding order items to count frequencies)
+        const topSellingAgg = await Order.aggregate([
+            { $match: { payment: true } },
+            { $unwind: "$items" },
+            { $group: { 
+                _id: "$items.product.name", 
+                totalSold: { $sum: "$items.quantity" },
+                revenue: { $sum: { $multiply: ["$items.quantity", "$items.product.offerPrice"] } }
+            }},
+            { $sort: { totalSold: -1 } },
+            { $limit: 7 }
+        ]);
+
+        const topProducts = topSellingAgg.map(item => ({
+            name: item._id || "Unknown Product", sold: item.totalSold, revenue: item.revenue
+        }));
+
         res.json({
             success: true,
             stats: {
@@ -651,7 +683,10 @@ export const getSuperAdminStats = async (req, res) => {
                 payoutBreakdown: { pending: pendingPayouts, paid: completedPayouts },
                 recentWithdrawals,
                 topPartnerBalances: top15Balances,
-                revenueOverTime: formattedGraphData
+                revenueOverTime: formattedGraphData,
+                inventory: { inStock: inStockCount, outOfStock: outOfStockCount },
+                logistics: logisticsStatus,
+                topProducts: topProducts
             }
         });
     } catch (error) { res.json({ success: false, message: error.message }); }

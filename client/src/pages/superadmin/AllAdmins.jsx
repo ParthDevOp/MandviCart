@@ -117,7 +117,7 @@ const AllAdmins = () => {
     const bannedCount = admins.filter(a => a.isBlocked).length;
 
     return (
-        <div className="space-y-6 pb-20 font-outfit max-w-7xl mx-auto">
+        <div className="space-y-6 pb-20 max-w-7xl mx-auto">
             
             {/* 🟢 HEADER & METRICS */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">

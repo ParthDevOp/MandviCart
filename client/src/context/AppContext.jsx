@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useUser, useClerk } from "@clerk/clerk-react"; 
+import { io } from "socket.io-client";
 
 export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
     const currency = "₹";
     const navigate = useNavigate();
-const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://mandvicart-backend.onrender.com";
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://mandvicart-backend.onrender.com";
     const { isSignedIn, user: clerkUser, isLoaded: clerkLoaded } = useUser();
     const { signOut: clerkSignOut } = useClerk();
 
@@ -277,6 +278,27 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://mandvicart-backe
             setIsLoading(false);
         }
     }, [token, user, fetchUserProfile, clerkLoaded]);
+
+    // 🟢 NEW: Global Socket Notification Engine
+    useEffect(() => {
+        let globalSocket;
+        if (user && user._id) {
+            globalSocket = io(backendUrl);
+            globalSocket.emit("register_user", user._id);
+
+            globalSocket.on("push_notification", (message) => {
+                // Play heavy-duty global notification toast!
+                toast.success(message, {
+                    duration: 8000,
+                    icon: '🔔',
+                    style: { background: '#10b981', color: '#fff', fontWeight: 'bold' }
+                });
+            });
+        }
+        return () => {
+            if (globalSocket) globalSocket.disconnect();
+        };
+    }, [user, backendUrl]);
 
     const value = {
         navigate, currency, backendUrl, isLoading,

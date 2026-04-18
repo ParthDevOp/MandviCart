@@ -94,7 +94,7 @@ const ContentManagement = () => {
     };
 
     return (
-        <div className="space-y-6 pb-12 w-full min-w-0 font-outfit">
+        <div className="space-y-6 pb-12 w-full min-w-0">
             
             {/* 🟢 HEADER */}
             <div className="bg-white p-5 lg:p-6 rounded-2xl shadow-sm border border-slate-200/60 w-full">

@@ -4,7 +4,7 @@ import { useAppContext } from "../../context/AppContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
     LayoutDashboard, ShieldCheck, Activity, Settings, LogOut, ArrowLeft,
-    Users, DollarSign, Layout, MessageSquare, Bell, Menu, X, UserPlus, Search
+    Users, IndianRupee, Layout, MessageSquare, Bell, Menu, X, UserPlus, Search
 } from 'lucide-react';
 
 const SuperLayout = () => {
@@ -33,7 +33,7 @@ const SuperLayout = () => {
         { name: "Overview", path: "/superadmin/dashboard", icon: LayoutDashboard },
         { name: "Manage Admins", path: "/superadmin/admins", icon: ShieldCheck },
         { name: "All Users", path: "/superadmin/users", icon: Users },
-        { name: "Payout Requests", path: "/superadmin/payouts", icon: DollarSign },
+        { name: "Payout Requests", path: "/superadmin/payouts", icon: IndianRupee },
         { name: "Content Manager", path: "/superadmin/content", icon: Layout },
         { name: "Chat Monitor", path: "/superadmin/chat", icon: MessageSquare },
         { name: "Activity Logs", path: "/superadmin/logs", icon: Activity },
@@ -41,7 +41,7 @@ const SuperLayout = () => {
     ];
 
     return (
-        <div className="flex h-screen bg-slate-50 font-outfit overflow-hidden">
+        <div className="flex h-screen bg-slate-50 overflow-hidden">
             
             {/* 🟢 MOBILE OVERLAY */}
             <AnimatePresence>
@@ -118,16 +118,7 @@ const SuperLayout = () => {
                         <h1 className="text-lg font-black text-slate-800 hidden md:block">Super Console</h1>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                        <div className="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 focus-within:border-purple-400 focus-within:bg-white transition-colors">
-                            <Search size={14} className="text-slate-400"/>
-                            <input type="text" placeholder="Quick search..." className="bg-transparent border-none outline-none text-sm font-medium text-slate-700 w-48"/>
-                        </div>
-                        <button className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors relative">
-                            <Bell size={18}/>
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse ring-2 ring-white"></span>
-                        </button>
-                    </div>
+                    {/* Utilities removed by request */}
                 </header>
 
                 {/* Scrollable Outlet Content */}
