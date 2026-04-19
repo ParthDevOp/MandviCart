@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SignedIn, SignedOut, UserButton, useClerk, useUser } from "@clerk/clerk-react";
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
     const [open, setOpen] = useState(false);
@@ -113,6 +114,21 @@ const Navbar = () => {
             case 'seller': navigate('/seller/dashboard'); break;
             case 'rider': navigate('/rider/dashboard'); break;
             default: navigate('/home');
+        }
+    };
+
+    const handleCartClick = (e) => {
+        if (!user) {
+            e.preventDefault();
+            toast.error("Please login to continue", { icon: '🔒' });
+            openSignIn();
+        } else {
+            if (e.currentTarget.tagName !== 'A') {
+                setOpen(false);
+                navigate("/cart");
+            } else {
+                setOpen(false);
+            }
         }
     };
 
@@ -308,7 +324,7 @@ const Navbar = () => {
                     {/* 🟢 FUTURISTIC CART HOVER */}
                     {allowSurfing && !isStaff && (
                         <div className="relative hidden sm:block" onMouseEnter={() => handleMouseEnter('cart')} onMouseLeave={() => handleMouseLeave('cart')}>
-                            <div onClick={()=> navigate("/cart")} className="relative flex w-10 h-10 items-center justify-center bg-slate-100 hover:bg-emerald-50 rounded-full transition-colors cursor-pointer group active:scale-95">
+                            <div onClick={handleCartClick} className="relative flex w-10 h-10 items-center justify-center bg-slate-100 hover:bg-emerald-50 rounded-full transition-colors cursor-pointer group active:scale-95">
                                 <ShoppingCart className='w-4 h-4 text-slate-600 group-hover:text-emerald-600 transition-colors' />
                                 {getCartCount() > 0 && (
                                     <span className="absolute -top-1 -right-1 text-[10px] font-bold text-white bg-emerald-500 w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white shadow-sm transition-transform group-hover:scale-110">
@@ -332,7 +348,7 @@ const Navbar = () => {
                                                 <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3 mb-4 text-center">
                                                     <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest">Ready for Checkout</p>
                                                 </div>
-                                                <button onClick={()=> navigate("/cart")} className="w-full py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl text-sm font-bold shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-95 transition-all">
+                                                <button onClick={handleCartClick} className="w-full py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl text-sm font-bold shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-95 transition-all">
                                                     Proceed to Cart
                                                 </button>
                                             </>
@@ -442,7 +458,7 @@ const Navbar = () => {
                         
                         {/* 🟢 MOBILE CART LINK (Needed since hover is hidden on mobile) */}
                         {!isStaff && (
-                            <NavLink onClick={()=>setOpen(false)} to='/cart' className={({isActive}) => `py-3.5 px-4 rounded-xl font-bold flex items-center justify-between transition-colors ${isActive ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}>
+                            <NavLink onClick={handleCartClick} to='/cart' className={({isActive}) => `py-3.5 px-4 rounded-xl font-bold flex items-center justify-between transition-colors ${isActive ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}>
                                 {({isActive}) => (
                                     <>
                                         <div className="flex items-center gap-3"><ShoppingCart size={18} className={isActive ? 'text-emerald-500' : 'text-slate-400'}/> Cart</div>
