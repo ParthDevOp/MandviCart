@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
 import {
-    Truck, CheckCircle, XCircle, Clock, RefreshCw,
+    Bike, CheckCircle, XCircle, Clock, RefreshCw,
     Key, ShoppingBag, X, ChevronRight, Store, MapPin, AlertCircle, Receipt, Download, CreditCard, Banknote, Navigation, Radar
 } from 'lucide-react';
 
@@ -72,7 +72,7 @@ const AnimatedTrackingCard = ({ order, onTrack }) => {
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shadow-sm z-10 bg-white relative
                                       ${isOut ? 'border-emerald-500 text-emerald-600' : isReady ? 'border-cyan-400 text-cyan-600 shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'border-slate-200 text-slate-300'}`}>
                             {isReady && <div className="absolute inset-0 rounded-full animate-ping border border-cyan-400 opacity-50"></div>}
-                            <Truck size={18} />
+                            <Bike size={18} />
                         </div>
                         <span className="text-[10px] text-slate-500 mt-2 font-bold uppercase">
                             {isOut ? 'At Delivery Boy' : isReady ? 'Not Out Yet' : 'Awaiting Boy'}
@@ -470,7 +470,7 @@ const MyOrders = () => {
     const getStatusIcon = (status) => {
         if (status === 'Delivered') return <CheckCircle size={16} />;
         if (status === 'Cancelled') return <XCircle size={16} />;
-        if (status === 'Out for Delivery') return <Truck size={16} />;
+        if (status === 'Out for Delivery') return <Bike size={16} />;
         return <Clock size={16} />;
     };
 
@@ -508,13 +508,7 @@ const MyOrders = () => {
                 {/* MAP MODAL OVERLAY */}
                 {selectedOrder && (
                     <div className="fixed inset-0 z-[9999] bg-slate-950 w-full h-full flex flex-col animate-fade-in">
-                        <button
-                            onClick={closeMap}
-                            className="absolute top-6 left-6 z-[10000] p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full shadow-lg text-white hover:bg-red-500 hover:border-red-500 transition-all"
-                        >
-                            <X size={24} />
-                        </button>
-                        <TrackingMap order={selectedOrder} />
+                        <TrackingMap order={selectedOrder} onClose={closeMap} />
                     </div>
                 )}
 
