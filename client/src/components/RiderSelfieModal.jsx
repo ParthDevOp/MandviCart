@@ -153,16 +153,26 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
         try {
             const track = webcamRef.current?.video?.srcObject?.getVideoTracks()[0];
             if (track) {
-                // If device supports actual torch, use it as well
+                // If device supports actual torch or exposure compensation, use them to maximize light
                 const capabilities = track.getCapabilities?.() || {};
+                const constraints = { advanced: [] };
+                
                 if (capabilities.torch) {
-                    await track.applyConstraints({
-                        advanced: [{ torch: toggleValue }]
+                    constraints.advanced.push({ torch: toggleValue });
+                }
+                
+                if (capabilities.exposureCompensation) {
+                    constraints.advanced.push({ 
+                        exposureCompensation: toggleValue ? capabilities.exposureCompensation.max : 0 
                     });
+                }
+
+                if (constraints.advanced.length > 0) {
+                    await track.applyConstraints(constraints);
                 }
             }
         } catch (err) {
-            console.log("Torch access error or unsupposed (falling back to screen Ring Light)", err);
+            console.log("Torch/Exposure access error or unsupported (falling back to screen Ring Light)", err);
         }
     };
 
@@ -203,7 +213,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                         </div>
 
                         {/* Scanner Viewport */}
-                        <div className={`p-6 flex flex-col items-center justify-center relative h-[400px] overflow-hidden transition-colors duration-500 ${ringLightOn ? 'bg-slate-100' : 'bg-slate-900'}`}>
+                        <div className={`p-6 flex flex-col items-center justify-center relative h-[400px] overflow-hidden transition-colors duration-500 ${ringLightOn ? 'bg-white' : 'bg-slate-900'}`}>
                             
                             {/* Loading State */}
                             {(!modelsLoaded || !refDescriptor) ? (
@@ -212,7 +222,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                     <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 text-center px-4 ${ringLightOn ? 'text-slate-500' : 'text-slate-400'}`}>Initializing System...</p>
                                 </div>
                             ) : (
-                                <div className={`relative w-80 h-80 rounded-full overflow-hidden flex items-center justify-center z-20 transition-all duration-300 ${ringLightOn ? 'border-[16px] border-white shadow-[0_0_30px_rgba(255,255,255,0.8)] bg-white' : 'border-[6px] border-slate-700 shadow-2xl bg-black'}`}>
+                                <div className={`relative w-80 h-80 rounded-full overflow-hidden flex items-center justify-center z-20 transition-all duration-300 ${ringLightOn ? 'border-[40px] md:border-[64px] border-white shadow-[0_0_60px_20px_rgba(255,255,255,1)] bg-white' : 'border-[6px] border-slate-700 shadow-2xl bg-black'}`}>
                                     
                                     {/* Always Active Live Video Feed */}
                                     <Webcam
@@ -228,7 +238,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                     
                                     {/* Additional Ring Light internal glow effect */}
                                     {ringLightOn && !(scanResult || analyzingPhase) && (
-                                        <div className="absolute inset-0 z-[15] pointer-events-none rounded-full shadow-[inset_0_0_30px_rgba(255,255,255,0.9)]" />
+                                        <div className="absolute inset-0 z-[15] pointer-events-none rounded-full shadow-[inset_0_0_60px_30px_rgba(255,255,255,1)]" />
                                     )}
 
                                     {/* Transparent Canvas for face-api boxes. Only show while scanning. */}
