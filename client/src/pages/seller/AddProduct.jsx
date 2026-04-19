@@ -8,7 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AddProduct = () => {
-    const { axios, fetchProducts, products } = useAppContext();
+    const { axios, fetchProducts, products, systemSettings } = useAppContext();
 
     const [category, setCategory] = useState('');
     const [subCategory, setSubCategory] = useState('');
@@ -22,7 +22,7 @@ const AddProduct = () => {
     const existingCategories = useMemo(() => [...new Set(products.map(p => p.category).filter(Boolean))], [products]);
     const existingSubCategories = useMemo(() => [...new Set(products.filter(p => p.category === category).map(p => p.subCategory).filter(Boolean))], [products, category]);
 
-    const PLATFORM_FEE_PERCENT = 5; 
+    const PLATFORM_FEE_PERCENT = systemSettings?.platformFeePercent || 5; 
     const DISCOUNT_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 40, 50, 60, 70]; 
     const UNIT_TYPES = {
         "Weight": ["gm", "kg"],

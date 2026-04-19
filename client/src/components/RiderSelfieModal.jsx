@@ -93,27 +93,6 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                 const isCentered = box.width > 100 && box.height > 100;
                                 const isMatch = distance < 0.50;
 
-                                let boxColor = 'rgba(234, 179, 8, 0.9)'; // scanning (Yellow)
-                                let labelStatus = `Scanning Face...`;
-
-                                if (isCentered && isMatch) {
-                                    boxColor = '#4fbf8b'; // App's primary green
-                                    labelStatus = `${matchScore}% Match!`;
-                                } else if (!isCentered) {
-                                    boxColor = 'rgba(239, 68, 68, 0.9)'; // reposition (Red)
-                                    labelStatus = 'Please move face to center';
-                                } else if (!isMatch) {
-                                    boxColor = 'rgba(249, 115, 22, 0.9)'; // low match (Orange)
-                                    labelStatus = 'Recognizing...';
-                                }
-
-                                const drawBox = new faceapi.draw.DrawBox(box, { 
-                                    label: labelStatus, 
-                                    boxColor: boxColor,
-                                    drawLabelOptions: { fontColor: '#ffffff', backgroundColor: boxColor }
-                                });
-                                drawBox.draw(canvasRef.current);
-
                                 if (isMatch && isCentered) {
                                     clearInterval(interval);
                                     
@@ -293,7 +272,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                                 </motion.div>
                                                 
                                                 <h4 className="text-white font-black text-4xl tracking-tighter mb-2 shadow-black drop-shadow-md">
-                                                    {scanResult.score}%
+                                                    Verified
                                                 </h4>
                                                 
                                                 <div className="bg-black/10 px-4 py-1.5 rounded-full border border-white/30 backdrop-blur-sm">
@@ -332,7 +311,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                     </p>
                                     <div className={`mt-4 flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border transition-colors ${ringLightOn ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
                                         <ScanFace size={14} className={activeScore > 0 ? "text-primary" : "text-slate-400"} /> 
-                                        {activeScore === 0 ? "Detecting..." : `Confidence Level: ${activeScore}%`}
+                                        {activeScore === 0 ? "Detecting Face..." : "Aligning Face..."}
                                     </div>
                                 </>
                             )}

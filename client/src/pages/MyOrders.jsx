@@ -94,11 +94,11 @@ const AnimatedTrackingCard = ({ order, onTrack }) => {
                 <p className="text-slate-600 text-sm font-medium leading-relaxed mb-6 border-l-2 border-emerald-500 pl-3">
                     {isPacking && "Your items are securely being sorted and packed at MandviCart."}
                     {isReady && "Your order is ready. A delivery boy has been assigned to pick it up!"}
-                    {isOut && "A delivery boy is on the way to your coordinates. Track live!"}
+                    {isOut && "A delivery boy is on the way! ETA is visible on the live map."}
                 </p>
                 <div className="flex flex-col gap-3">
                     <div className="flex justify-between items-center gap-3">
-                        <button onClick={() => onTrack(order)} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-[0_4px_15px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_20px_rgba(16,185,129,0.4)] flex justify-center items-center gap-2 text-sm z-10">
+                        <button onClick={() => onTrack(order)} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-[0_4px_15px_rgba(16,185,129,0.3)] hover:shadow-[0_8px_20px_rgba(16,185,129,0.4)] flex justify-center items-center gap-2 text-sm relative z-20">
                             <Navigation size={18} /> Open Live Map
                         </button>
                         <div className="bg-slate-50 border border-slate-200 py-2.5 px-4 rounded-xl flex flex-col items-center justify-center min-w-[80px]">
