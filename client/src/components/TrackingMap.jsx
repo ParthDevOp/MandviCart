@@ -202,8 +202,8 @@ const TrackingMap = ({ order, onClose }) => {
             <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4 animate-bounce shadow-lg shadow-green-100">
                 <Bike size={32} className="text-green-500" />
             </div>
-            <h2 className="text-xl font-black text-gray-800 tracking-wide">Connecting GPS...</h2>
-            <p className="text-gray-400 font-medium mt-2">Locating your valet</p>
+            <h2 className="text-xl font-black text-gray-800 tracking-wide">Finding Location...</h2>
+            <p className="text-gray-400 font-medium mt-2">Locating Delivery Partner</p>
         </div>
     );
 
@@ -267,7 +267,7 @@ const TrackingMap = ({ order, onClose }) => {
                                 <span className="absolute -bottom-1 -right-1 flex h-4 w-4"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white"></span></span>
                             </div>
                             <div className="pr-8">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{isPickup ? 'VALET DISPATCHED' : 'OUT FOR DELIVERY'}</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{isPickup ? 'COURIER ASSIGNED' : 'OUT FOR DELIVERY'}</p>
                                 <h3 className="font-black text-slate-800 text-[20px] leading-tight mt-0.5">
                                     {isPickup 
                                         ? (etaSec !== null ? `Heading to store (${formatETA(etaSec)})` : 'Heading to store') 

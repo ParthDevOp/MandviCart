@@ -73,10 +73,47 @@ const SuperDashboard = () => {
     ];
 
     // 🟢 NEW STATS:
+    // 🟢 EXTENDED STATS & FALLBACKS FOR NEW GRAPHS:
     const inventoryData = [
         { name: 'In Stock', value: stats?.inventory?.inStock || 0, color: '#10b981' },
         { name: 'Out of Stock', value: stats?.inventory?.outOfStock || 0, color: '#f43f5e' }
     ];
+    
+    const orderStatusData = stats?.orderStatus || [
+        { name: 'Delivered', value: 852, color: '#10b981' },
+        { name: 'Pending', value: 145, color: '#f59e0b' },
+        { name: 'Cancelled', value: 64, color: '#ef4444' },
+        { name: 'Returned', value: 23, color: '#64748b' },
+    ];
+
+    const userGrowthData = stats?.userGrowth || [
+        { date: '1st', Users: 120, Partners: 17 },
+        { date: '5th', Users: 160, Partners: 25 },
+        { date: '10th', Users: 210, Partners: 32 },
+        { date: '15th', Users: 280, Partners: 41 },
+        { date: '20th', Users: 350, Partners: 48 },
+        { date: '25th', Users: 420, Partners: 55 },
+        { date: '30th', Users: 500, Partners: 68 },
+    ];
+
+    const categorySalesData = stats?.categorySales || [
+        { name: 'Groceries', sales: 45000 },
+        { name: 'Dairy', sales: 38000 },
+        { name: 'Snacks', sales: 29000 },
+        { name: 'Meat', sales: 21000 },
+        { name: 'Bakery', sales: 15000 },
+    ];
+
+    const deliveryTimeData = stats?.deliveryTime || [
+        { day: 'Mon', avgTime: 22 },
+        { day: 'Tue', avgTime: 25 },
+        { day: 'Wed', avgTime: 18 },
+        { day: 'Thu', avgTime: 20 },
+        { day: 'Fri', avgTime: 28 },
+        { day: 'Sat', avgTime: 21 },
+        { day: 'Sun', avgTime: 19 },
+    ];
+
     const topProducts = stats?.topProducts || [];
     const logisticsData = stats?.logistics || [];
     const topSellers = stats?.topPartnerBalances?.filter(s => s.role === 'seller').slice(0, 5) || [];
@@ -212,19 +249,37 @@ const SuperDashboard = () => {
                             </div>
                         </div>
                         
-                        {/* 🟢 NEW: Top Sellers Bar Chart */}
-                        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
-                            <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><Store size={16} className="text-purple-600"/> Top Performing Sellers (Revenue)</h3>
-                            <div className="w-full h-[250px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topSellers} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
-                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} dy={10} />
-                                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} tickFormatter={(val) => `₹${val}`} />
-                                        <RechartsTooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
-                                        <Bar dataKey="availableBalance" name="Earnings" fill="#c084fc" radius={[4, 4, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* 🟢 Top Sellers Bar Chart */}
+                            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><Store size={16} className="text-purple-600"/> Top Performing Sellers</h3>
+                                <div className="w-full h-[250px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={topSellers} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} dy={10} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} tickFormatter={(val) => `₹${val}`} />
+                                            <RechartsTooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
+                                            <Bar dataKey="availableBalance" name="Earnings" fill="#c084fc" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                            
+                            {/* 🟢 Sales by Category Horizontal Bar Chart */}
+                            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><PieChart size={16} className="text-pink-500"/> Revenue by Category</h3>
+                                <div className="w-full h-[250px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={categorySalesData} layout="vertical" margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9"/>
+                                            <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} />
+                                            <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} width={80}/>
+                                            <RechartsTooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
+                                            <Bar dataKey="sales" name="Revenue (₹)" fill="#f472b6" radius={[0, 4, 4, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -278,19 +333,62 @@ const SuperDashboard = () => {
                             </div>
                         </div>
 
-                        {/* 🟢 NEW: Top Products */}
-                        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
-                            <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><PackageSearch size={16} className="text-pink-500"/> Top 7 Trending Products</h3>
-                            <div className="w-full h-[300px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topProducts} layout="vertical" margin={{ top: 10, right: 10, left: 30, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9"/>
-                                        <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} />
-                                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} width={120}/>
-                                        <RechartsTooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
-                                        <Bar dataKey="sold" name="Units Sold" fill="#f472b6" radius={[0, 4, 4, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Top Products */}
+                            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><PackageSearch size={16} className="text-pink-500"/> Trending Products</h3>
+                                <div className="w-full h-[250px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={topProducts} layout="vertical" margin={{ top: 10, right: 10, left: 20, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9"/>
+                                            <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11}} />
+                                            <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}} width={80}/>
+                                            <RechartsTooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0'}}/>
+                                            <Bar dataKey="sold" name="Units" fill="#f472b6" radius={[0, 4, 4, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Order Status Donut */}
+                            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 flex flex-col justify-center">
+                                <h3 className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2"><Activity size={16} className="text-orange-500"/> Order Status Mix</h3>
+                                <div className="w-full h-[180px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={orderStatusData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={4} dataKey="value" stroke="none">
+                                                {orderStatusData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                                            </Pie>
+                                            <RechartsTooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}/>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-4">
+                                    {orderStatusData.map((d, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
+                                            <span className="w-2.5 h-2.5 rounded-full" style={{background: d.color}}></span> {d.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            {/* Average Delivery Time Area Chart */}
+                            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><Clock size={16} className="text-blue-500"/> Fleet Avg. Delivery (Mins)</h3>
+                                <div className="w-full h-[250px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={deliveryTimeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                                            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} dy={10} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} />
+                                            <RechartsTooltip contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} itemStyle={{ fontWeight: 700, color: '#3b82f6' }}/>
+                                            <Area type="monotone" name="Mins" dataKey="avgTime" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorTime)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
                         </div>
 
@@ -409,6 +507,24 @@ const SuperDashboard = () => {
                                     <button onClick={() => navigate('/superadmin/users')} className="px-5 py-2.5 bg-slate-950 text-white rounded-xl text-xs font-bold shadow-sm hover:bg-slate-800 transition-colors">Go to User Management</button>
                                     <button onClick={() => navigate('/superadmin/payouts')} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold shadow-sm hover:bg-slate-50 transition-colors">Go to Payouts</button>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* 🟢 NEW: User Acquisition Line Chart */}
+                        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                            <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><TrendingUp size={16} className="text-emerald-500"/> Platform Growth Trajectory</h3>
+                            <div className="w-full h-[300px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={userGrowthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} dy={10} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} />
+                                        <RechartsTooltip contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
+                                        <Legend wrapperStyle={{fontSize: '12px', fontWeight: 600, marginTop: '10px'}} />
+                                        <Line type="monotone" dataKey="Users" stroke="#10b981" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} />
+                                        <Line type="monotone" dataKey="Partners" stroke="#6366f1" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} />
+                                    </LineChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
 

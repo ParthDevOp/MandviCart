@@ -169,9 +169,9 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                         <div className={`p-5 flex justify-between items-center z-10 transition-colors ${ringLightOn ? 'bg-white border-b border-slate-100' : 'bg-slate-50 border-b border-slate-100'}`}>
                             <div>
                                 <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
-                                    <ShieldCheck className="text-primary" /> Identity Sync
+                                    <ShieldCheck className="text-primary" /> Identity Check
                                 </h3>
-                                <p className="text-xs font-medium text-slate-500 mt-1">Live Facial Verification Module</p>
+                                <p className="text-xs font-medium text-slate-500 mt-1">Photo Verification</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 {cameraReady && !scanResult && !analyzingPhase && (
@@ -302,7 +302,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                 </p>
                             ) : analyzingPhase ? (
                                 <p className="text-primary font-medium text-xs tracking-widest uppercase animate-pulse">
-                                    Processing Biometrics...
+                                    Processing Photo...
                                 </p>
                             ) : (
                                 <>

@@ -84,7 +84,7 @@ const AnimatedTrackingCard = ({ order, onTrack }) => {
                         <div className="w-10 h-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center shadow-sm z-10">
                             <MapPin size={18} className="text-slate-300" />
                         </div>
-                        <span className="text-[10px] text-slate-500 mt-2 font-bold uppercase">Target</span>
+                        <span className="text-[10px] text-slate-500 mt-2 font-bold uppercase">Destination</span>
                     </div>
                 </div>
             </div>
