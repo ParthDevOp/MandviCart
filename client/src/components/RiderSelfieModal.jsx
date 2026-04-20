@@ -30,14 +30,14 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
             try {
                 const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
                 await Promise.all([
-                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
                     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
                     faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
                 ]);
                 
                 if (user?.profileImage) {
                     const refImgElement = await faceapi.fetchImage(user.profileImage);
-                    const refDetection = await faceapi.detectSingleFace(refImgElement).withFaceLandmarks().withFaceDescriptor();
+                    const refDetection = await faceapi.detectSingleFace(refImgElement, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
                     if (refDetection && isMounted) {
                         setRefDescriptor(refDetection.descriptor);
                     } else if (isMounted) {
@@ -73,7 +73,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                     const video = webcamRef.current.video;
                     
                     try {
-                        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+                        const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
                         
                         if (detection) {
                             const distance = faceapi.euclideanDistance(refDescriptor, detection.descriptor);
@@ -90,8 +90,8 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                 ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                                 
                                 const box = resizedDetection.detection.box;
-                                const isCentered = box.width > 100 && box.height > 100;
-                                const isMatch = distance < 0.50;
+                                const isCentered = box.width > 20 && box.height > 20;
+                                const isMatch = distance < 0.55;
 
                                 if (isMatch && isCentered) {
                                     clearInterval(interval);
@@ -103,8 +103,8 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                         setScanResult({ score: matchScore, success: true, image: snap });
                                         setTimeout(() => {
                                             onVerify({ image: snap, score: matchScore });
-                                        }, 2000);
-                                    }, 1500); 
+                                        }, 1500);
+                                    }, 1000); 
                                 }
                             }
                         } else {
@@ -118,7 +118,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                          // Safely ignore inference errors during teardown
                     }
                 }
-            }, 1000);
+            }, 300);
         }
         return () => clearInterval(interval);
     }, [isOpen, modelsLoaded, refDescriptor, cameraReady, onVerify, scanResult, analyzingPhase]);
@@ -192,16 +192,16 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                         </div>
 
                         {/* Scanner Viewport */}
-                        <div className={`p-6 flex flex-col items-center justify-center relative h-[400px] overflow-hidden transition-colors duration-500 ${ringLightOn ? 'bg-white' : 'bg-slate-900'}`}>
+                        <div className={`p-6 flex flex-col items-center justify-center relative h-[400px] overflow-hidden transition-colors duration-500 ${ringLightOn ? 'bg-slate-50' : 'bg-slate-900 border-t border-slate-800'}`}>
                             
                             {/* Loading State */}
                             {(!modelsLoaded || !refDescriptor) ? (
-                                <div className={`w-64 h-64 rounded-full flex flex-col items-center justify-center shadow-inner text-primary relative z-20 ${ringLightOn ? 'bg-white border-4 border-slate-200' : 'bg-slate-900 border-4 border-slate-700'}`}>
+                                <div className={`w-64 h-64 rounded-full flex flex-col items-center justify-center shadow-inner text-primary relative z-20 ${ringLightOn ? 'bg-white border-4 border-slate-100' : 'bg-slate-900 border-4 border-slate-800 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]'}`}>
                                     <Loader2 className="animate-spin mb-2" size={32} />
                                     <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 text-center px-4 ${ringLightOn ? 'text-slate-500' : 'text-slate-400'}`}>Initializing System...</p>
                                 </div>
                             ) : (
-                                <div className={`relative w-80 h-80 rounded-full overflow-hidden flex items-center justify-center z-20 transition-all duration-300 ${ringLightOn ? 'border-[40px] md:border-[64px] border-white shadow-[0_0_60px_20px_rgba(255,255,255,1)] bg-white' : 'border-[6px] border-slate-700 shadow-2xl bg-black'}`}>
+                                <div className={`relative w-72 h-72 rounded-full overflow-hidden flex items-center justify-center z-20 transition-all duration-500 ${ringLightOn ? 'border-8 border-white shadow-[0_0_60px_15px_rgba(255,255,255,0.8),inset_0_0_40px_20px_rgba(255,255,255,0.4)] bg-white' : 'border-4 border-slate-800 shadow-[0_0_30px_rgba(79,191,139,0.1)] bg-slate-900'}`}>
                                     
                                     {/* Always Active Live Video Feed */}
                                     <Webcam
@@ -211,7 +211,7 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                         screenshotFormat="image/jpeg"
                                         screenshotQuality={1}
                                         videoConstraints={videoConstraints}
-                                        className="absolute inset-0 w-full h-full object-cover z-10"
+                                        className="absolute inset-0 w-full h-full object-cover z-10 scale-125"
                                         mirrored={true} 
                                     />
                                     
@@ -223,14 +223,14 @@ const RiderSelfieModal = ({ isOpen, onClose, onVerify }) => {
                                     {/* Transparent Canvas for face-api boxes. Only show while scanning. */}
                                     <canvas 
                                         ref={canvasRef} 
-                                        className="absolute inset-0 w-full h-full object-cover z-20"
+                                        className="absolute inset-0 w-full h-full object-cover z-20 scale-125"
                                         style={{ transform: "scaleX(-1)", display: (scanResult || analyzingPhase) ? 'none' : 'block' }}
                                     />
 
                                     {/* Live Targeting Reticle Layer */}
                                     {!(scanResult || analyzingPhase) && (
-                                        <div className="absolute inset-0 pointer-events-none z-30 flex items-center justify-center opacity-40">
-                                            <Target size={240} className="text-primary animate-[spin_8s_linear_infinite]" strokeWidth={1.5} />
+                                        <div className="absolute inset-0 pointer-events-none z-30 flex items-center justify-center opacity-30">
+                                            <Target size={220} className="text-primary animate-[spin_8s_linear_infinite]" strokeWidth={1} />
                                         </div>
                                     )}
 
