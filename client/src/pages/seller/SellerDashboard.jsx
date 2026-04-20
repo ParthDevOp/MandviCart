@@ -60,14 +60,22 @@ const SellerDashboard = () => {
                         }
                     });
 
-                    // 🟢 TRUE BALANCE MATH
-                    const pendingRequests = user.pendingWithdrawals || 0;
-                    const totalWithdrawn = user.totalWithdrawn || 0;
-                    const actualAvailable = earnings - clearing24h - pendingRequests - totalWithdrawn;
+                    // 🟢 FRONTEND DERIVED BALANCE MATH
+                    let livePending = 0;
+                    let liveWithdrawn = 0;
+
+                    if (payoutRes.data.success) {
+                        payoutRes.data.payouts.forEach(p => {
+                            if (p.status === 'pending') livePending += p.amount;
+                            if (p.status === 'paid') liveWithdrawn += p.amount;
+                        });
+                    }
+
+                    const actualAvailable = earnings - clearing24h - livePending - liveWithdrawn;
 
                     setStats({
                         totalEarnings: earnings,
-                        pendingBalance: clearing24h + pendingRequests, 
+                        pendingBalance: clearing24h + livePending, 
                         availableBalance: actualAvailable > 0 ? actualAvailable : 0,
                         totalOrders: orders.length
                     });

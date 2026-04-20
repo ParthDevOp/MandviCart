@@ -93,6 +93,15 @@ const AdminDashboard = () => {
     const COLORS = ['#0f172a', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
     const pieData = statsData.statusStats?.map(item => ({ name: item._id, value: item.count })) || [];
 
+    // 🟢 NEW FINANCIAL GRAPH DATA
+    const financialPieData = [
+        { name: 'Platform Net Profit', value: platformProfit },
+        { name: 'Paid to Partners', value: completedPayouts },
+        { name: 'Pending Liabilities', value: pendingPayouts }
+    ].filter(item => item.value > 0);
+
+    const FIN_COLORS = ['#10b981', '#3b82f6', '#f59e0b']; // Emerald, Blue, Amber
+
     // --- Minimalist Enterprise Components ---
     const MetricCard = ({ title, value, subtitle, icon: Icon, trend }) => (
         <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors group">
@@ -193,77 +202,54 @@ const AdminDashboard = () => {
                 {activeTab === 'financials' && (
                     <motion.div key="financials" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} transition={{ duration: 0.2 }} className="space-y-6">
                         {/* KPI Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                             <MetricCard title="Gross Volume (GMV)" value={`${currency}${totalGross.toLocaleString()}`} icon={CreditCard} trend={12.5} />
                             <MetricCard title="Net Platform Profit" value={`${currency}${platformProfit.toLocaleString()}`} icon={Landmark} trend={8.2} />
-                            <MetricCard title="Total Paid to Partners" value={`${currency}${completedPayouts.toLocaleString()}`} icon={CheckCircle} />
-                            <MetricCard title="Pending Obligations" value={`${currency}${pendingPayouts.toLocaleString()}`} icon={Clock} />
                         </div>
 
+                        {/* 🟢 NEW FINANCIAL GRAPHS */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Detailed Payouts Table */}
-                            <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                                <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                                    <h3 className="font-semibold text-slate-800 text-sm">Recent Partner Withdrawals</h3>
-                                    <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest bg-white px-2 py-1 rounded border border-slate-200">Last 10 Records</span>
-                                </div>
-                                <div className="overflow-x-auto flex-1">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead className="bg-white border-b border-slate-200 text-slate-500 text-[11px] uppercase tracking-wider font-semibold">
-                                            <tr>
-                                                <th className="p-4 py-3">Partner Name</th>
-                                                <th className="p-4 py-3">Role</th>
-                                                <th className="p-4 py-3">Amount</th>
-                                                <th className="p-4 py-3">Status</th>
-                                                <th className="p-4 py-3 text-right">Timestamp</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
-                                            {recentWithdrawals.length === 0 ? (
-                                                <tr><td colSpan="5" className="p-8 text-center text-slate-400">No recent transactions.</td></tr>
-                                            ) : recentWithdrawals.map((req, i) => (
-                                                <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                                    <td className="p-4 py-3">
-                                                        <p className="text-slate-900 font-semibold">{req.userId?.name || 'Unknown'}</p>
-                                                        <p className="text-[11px] text-slate-500 font-normal mt-0.5">{req.userId?.email}</p>
-                                                    </td>
-                                                    <td className="p-4 py-3 capitalize text-xs text-slate-600">{req.role}</td>
-                                                    <td className="p-4 py-3 font-bold text-slate-900">{currency}{req.amount.toLocaleString()}</td>
-                                                    <td className="p-4 py-3">
-                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${req.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                                                            {req.status === 'paid' ? <CheckCircle size={12} strokeWidth={3}/> : <Clock size={12} strokeWidth={3}/>} {req.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="p-4 py-3 text-right text-xs text-slate-500 font-mono">
-                                                        {new Date(req.requestDate || req.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                            {/* Financial Distribution Donut */}
+                            <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex flex-col items-center relative">
+                                <h3 className="text-sm font-semibold text-slate-800 w-full text-left mb-4 border-b border-slate-100 pb-3">Gross Volume Distribution</h3>
+                                <div className="w-full h-[250px] relative mt-2">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={financialPieData} cx="50%" cy="50%" innerRadius={70} outerRadius={90} paddingAngle={2} dataKey="value" stroke="none">
+                                                {financialPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={FIN_COLORS[index % FIN_COLORS.length]} />)}
+                                            </Pie>
+                                            <RechartsTooltip formatter={(val) => `${currency}${val.toLocaleString()}`} contentStyle={{ borderRadius: '4px', border: '1px solid #e2e8f0', fontSize: '12px' }}/>
+                                            <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: '600', color: '#64748b' }}/>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center -mt-4">
+                                        <span className="block text-2xl font-bold text-slate-900">{currency}{(platformProfit + completedPayouts + pendingPayouts).toLocaleString()}</span>
+                                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mt-1 block">Accounted</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Individual Wallet Ledger */}
-                            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full max-h-[500px]">
-                                <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
-                                    <h3 className="font-semibold text-slate-800 text-sm">Partner Liabilities</h3>
+                            {/* Revenue Area Chart */}
+                            <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col">
+                                <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                                    <h3 className="text-sm font-semibold text-slate-800">7-Day Revenue Momentum</h3>
                                 </div>
-                                <div className="p-5 space-y-4 overflow-y-auto hide-scrollbar flex-1">
-                                    {topPartnerBalances.length === 0 ? (
-                                        <p className="text-center text-sm text-slate-400 py-10">No active balances.</p>
-                                    ) : topPartnerBalances.map((partner, i) => (
-                                        <div key={i} className="flex justify-between items-center pb-4 border-b border-slate-100 last:border-0 last:pb-0">
-                                            <div>
-                                                <p className="font-semibold text-sm text-slate-800">{partner.name}</p>
-                                                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mt-1">{partner.role}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-sm font-bold text-slate-900">{currency}{partner.availableBalance.toLocaleString()}</p>
-                                                <p className="text-[10px] text-amber-600 font-semibold mt-1">Pending: {currency}{partner.pendingWithdrawals.toLocaleString()}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div className="p-6 w-full h-[300px]">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorRevFin" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                                            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} dy={10} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} tickFormatter={(val) => `₹${val}`} />
+                                            <RechartsTooltip contentStyle={{borderRadius: '4px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)', fontSize: '12px'}} itemStyle={{ fontWeight: 600, color: '#10b981' }} formatter={(val) => [`₹${val}`, "Revenue"]}/>
+                                            <Area type="monotone" name="Gross Revenue" dataKey="revenue" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorRevFin)" activeDot={{ r: 4, strokeWidth: 0 }} />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
                                 </div>
                             </div>
                         </div>
