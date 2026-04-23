@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 const AdminLayout = () => {
-    const { axios, navigate, setUser, setRole } = useAppContext();
+    const { axios, navigate, setUser, setRole, logout } = useAppContext();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
 
@@ -18,16 +18,6 @@ const AdminLayout = () => {
         setSidebarOpen(false);
     }, [location]);
 
-    const logout = async () => {
-        try {
-            await axios.post('/api/user/logout');
-            setUser(null); 
-            setRole('user'); 
-            navigate('/home');
-        } catch (error) {
-            console.error("Logout failed", error);
-        }
-    };
 
     const sidebarLinks = [
         { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },

@@ -1,137 +1,106 @@
-<div align="center">
-  <img src="https://img.icons8.com/color/120/000000/shopping-cart--v1.png" alt="MandviCart Logo"/>
-  <h1>🛒 MandviCart</h1>
-  <p><strong>A Next-Generation, Real-Time Multi-Vendor eCommerce Platform</strong></p>
+# 🛒 MandviCart - Multi-Vendor Grocery Ecosystem
 
-  [![React](https://img.shields.io/badge/React-19.0-blue.svg?style=flat&logo=react)](https://reactjs.org/)
-  [![Node.js](https://img.shields.io/badge/Node.js-Backend-green.svg?style=flat&logo=nodedotjs)](https://nodejs.org/)
-  [![MongoDB](https://img.shields.io/badge/MongoDB-Database-success.svg?style=flat&logo=mongodb)](https://www.mongodb.com/)
-  [![Socket.io](https://img.shields.io/badge/Socket.IO-Real%20Time-black.svg?style=flat&logo=socketdotio)](https://socket.io/)
-  [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-Styling-0ED7B5.svg?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
-</div>
+![MandviCart Banner](https://via.placeholder.com/1200x400/16a34a/ffffff?text=MandviCart+Multi-Vendor+Ecosystem)
 
-<br />
-
-MandviCart is a deeply architected **MERN Stack** grocery and eCommerce platform bridging the gap between Customers, Vendors, and Delivery Riders. Leveraging a complex **5-Tier Role System** with **Real-Time GPS Tracking** and dynamic **Financial Ledger splits**, this platform simulates a production-grade enterprise application.
+Welcome to **MandviCart**, a comprehensive, full-stack, multi-vendor e-commerce platform custom-built for large-scale grocery operations. This is not just a standard storefront; it is a complex **role-based architecture** hosting five distinct portals to handle everything from platform-wide analytics and vendor payouts to real-time delivery tracking and customer shopping.
 
 ---
 
-## 🌟 Platform Highlights
-- **Real-Time Logistics Engine:** Live order tracking, rider driver map synchronization, and real-time socket emitting.
-- **Airtight Financial Engine:** Fully calculates commissions, platform fees, delivery splits, and securely manages automated backend payout ledgers between sellers and riders.
-- **Complex Role Hierarchy:** Dedicated workspaces and dashboards with protected routing for Guests, Customers, Sellers, Delivery Riders, Admins, and SuperAdmins.
-- **Vendor Product Pipeline:** Zero-trust system where Seller-created products drop into a queue for Admin approval before going live on the marketplace.
-- **Modern Immersive UI:** Framer Motion, GSAP, and Lottie integrations for silky-smooth cart animations and page transitions.
+## 🌐 Live Demo
+
+**Check out the live application here:** [Insert Your Live Production Link Here]
+
+### 🧪 Portfolio Demo Mode (Test Accounts)
+To make exploring the platform easier for recruiters and testers, a "Demo Credentials" panel is built directly into the Login screen. You can use the following accounts to access different dashboards without needing to sign up:
+
+| Role | Email | Password | Access Level |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@test.com` | `MandviAdmin!2026` | Oversee users, orders, general products, and chat. |
+| **Seller** | `seller@test.com` | `MandviSeller!2026` | Manage personal store inventory, dispatch orders. |
+| **Rider** | `rider@test.com` | `MandviRider!2026` | Track active deliveries, update status, view earnings via map. |
+| **Customer** | `user@test.com` | `MandviCustomer!2026` | Browse products, add to cart, checkout, view order history. |
+
+*(Note: The Super Admin route is restricted and kept private for security management).*
 
 ---
 
-## 👥 Multi-Role Ecosystem
+## 🏗️ System Architecture & Roles
 
-### 🛒 1. Customer Context
-- Intelligent persistent cart system tied to database states or local guest state.
-- Multiple Address management with fallback structures for backward compatibility.
-- Interactive cart UI with real-time dynamic Free Delivery thresholds driven from the backend.
-- Full checkout gateways and live tracking map interfaces.
+MandviCart is driven by a highly granular Role-Based Access Control (RBAC) system. 
 
-### 🏪 2. Seller Context
-- Dedicated Seller Dashboard for managing active stock, orders, and total earnings payouts.
-- Product creation with detailed Variant & Size options (e.g., 500g vs 1kg).
-- Strict OTP handoff systems—Sellers generate a secure OTP when releasing the package to a Rider.
-
-### 🛵 3. Delivery Rider Context
-- Rider Dispatch Map UI showing "Available Jobs" around their location.
-- Live GPS polling pushes directly via Socket.io to the customer's active tracking screen.
-- Final "Delivery OTP" validation required to confirm drop-off and trigger wallet payments.
-
-### 👑 4. Admin & SuperAdmin Context
-- Product Approval Dashboard: Enforce quality control on new vendor submissions.
-- SuperAdmin Ledger: Adjust platform commission metrics (`platformFeePercent`, `freeDeliveryThreshold`) on-the-fly globally.
-- Ban configurations, Rider recruitment oversight, and complete financial auditing.
+1. **👑 Super Admin:** The master controller. Has exclusive access to system settings, global financial analytics, overriding user bans, detailed activity logs, and processing seller payload requests.
+2. **🔵 Admin:** Platform managers. Responsible for moderating all users, tracking global orders, approving platform products, and resolving support chats.
+3. **🟣 Seller:** Third-party vendors. They have a dedicated dashboard to list their products, track incoming sales, monitor their digital wallet, and request withdrawal payouts.
+4. **🟠 Delivery Rider:** The logistics network. A mobile-optimized interface with live map integrations to accept available jobs, update order states (Picked up -> Delivered), and track their active delivery route.
+5. **🟢 Customer:** The end users. They experience a highly optimized, animated, layout featuring cart tracking, order history, and extensive product browsing.
 
 ---
 
-## 🏗️ Technology Stack
+## 🚀 Tech Stack
 
-| Domain | Technology / Tools |
-| :--- | :--- |
-| **Frontend UI** | React.js (Vite), TailwindCSS, GSAP, Lottie React |
-| **State & Auth** | Context API, Axios Interceptors, Clerk Auth Integrations |
-| **Backend Core** | Node.js, Express.js (Modular REST APIs) |
-| **Database** | MongoDB & Mongoose Schema Mapping |
-| **Real-Time Processing**| Socket.IO, GPS Coordinate translation (Leaflet APIs) |
-| **Media Hosting** | Cloudinary integration for product arrays and profiles |
+### Frontend Client
+* **Framework:** React.js (built with Vite)
+* **Styling:** Tailwind CSS + custom glassmorphism utilities
+* **Animations:** Framer Motion, Lottie React
+* **State & Routing:** React Context API, React Router DOM
+* **Charts & Visuals:** Recharts
+* **Maps:** Leaflet & React-Leaflet
+* **Authentication:** Clerk Auth (`@clerk/clerk-react`)
+
+### Backend Server
+* **Environment:** Node.js
+* **Framework:** Express.js
+* **Database:** MongoDB (via Mongoose ODM)
+* **Storage / Assets:** Cloudinary API
+* **Security:** CORS, Environment variables configuration.
 
 ---
 
-## 🚀 Installation & Local Deployment
+## ✨ Key Features
 
-### 1. Clone the Repository
+* **High-Fidelity Dashboards:** Data-heavy Recharts visualizations pulling actual database order history to calculate platform revenue, sales pacing, and vendor payouts dynamically.
+* **Intelligent Routing & Auth Guards:** Custom React components (`PublicGuard`, `CustomerGuard`, `RoleGuard`) that securely trap staff in their relevant portals and prevent unauthorized switching.
+* **Modern UI/UX Elements:** Global cart tracking animations, dynamic seasonal themes (e.g., Holi color modes), complex modal managers, and smooth page transition loading.
+* **Rider Live Maps:** Interactive mapping allowing riders to see distance, ETA, and optimal delivery routes using Leaflet interfaces.
+* **Performance Optimizations:** React lazy-loading/Suspense for chunk splitting heavily trafficked routes to ensure instant load times.
+
+---
+
+## 🛠️ Local Installation
+
+If you would like to run the code locally, you will need Node.js and MongoDB installed.
+
+### 1. Clone the repository
 ```bash
 git clone https://github.com/ParthDevOp/MandviCart.git
 cd MandviCart
 ```
 
-### 2. Environment Configuration (⚠️ REQUIRED)
-> **SECURITY NOTICE:** Dedicated `.env` files are intentionally excluded from this repository. MandviCart handles dynamic commission splits and requires secure credentialing to operate locally.
+### 2. Setup the Server Environment
+1. Navigate to the `server` folder: `cd server`
+2. Install dependencies: `npm install`
+3. Create a `.env` file in the `server` directory and add the required variables:
+   ```env
+   PORT=5000
+   MONGODB_URI=your_mongodb_connection_string
+   CLOUDINARY_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   # Any other required keys (e.g. JWT secret if used alongside Clerk on backend)
+   ```
+4. Start the server: `npm start` (or `npm run dev`)
 
-
-
-
-
-### 3. Start the Backend Server
-```bash
-cd server
-npm install
-npm run dev
-```
-*Wait for the `✅ MongoDB Connected` and `🚀 Real-Time Server running` console logs.*
-
-### 4. Start the Frontend Application
-```bash
-cd client
-npm install
-npm run dev
-```
-
----
-
-## 🗺️ High-Level Directory Overview
-
-```text
-MandviCart/
-├── client/                     # Vite + React Frontend
-│   ├── src/
-│   │   ├── components/         # Global & Role-agnostic components
-│   │   ├── context/            # AppContext.jsx (Core Global State)
-│   │   ├── pages/
-│   │   │   ├── admin/          # Protected Admin Overviews
-│   │   │   ├── rider/          # Protected Rider Maps & Wallets
-│   │   │   ├── seller/         # Protected Seller Tools
-│   │   │   └── superadmin/     # System Configuration Dashboards
-│
-├── server/                     # Express.js Backend
-│   ├── configs/                # DB & Cloudinary Configuration
-│   ├── controllers/            # Deep Logic (Ledgers, Tracking, Flow)
-│   ├── models/                 # Mongoose Schemas (User, Product, SystemSetting)
-│   ├── routes/                 # RESTful Endpoints
-│   └── server.js               # Core Entry & Socket.IO initialization
-```
+### 3. Setup the Client Environment
+1. Open a new terminal and navigate to the `client` folder: `cd client`
+2. Install dependencies: `npm install`
+3. Create a `.env` file in the `client` directory and add your Clerk public key:
+   ```env
+   VITE_CLERK_PUBLISHABLE_KEY=your_clerk_key_here
+   VITE_BACKEND_URL=http://localhost:5000
+   ```
+4. Start the Vite development server: `npm run dev`
 
 ---
 
-## 🔒 Security Posture
-- **Financial Validation:** Client-side cart subtotals are completely discarded during checkout. The API autonomously calculates order values by fetching hardened `offerPrice` attributes directly from the database mapping to prevent spoofing.
-- **Route Fencing:** JWT-backed route guards violently redirect `Customers` attempting to inject into `Staff` paths, and vice-versa.
-- **Data Encapsulation:** Mongoose `minimize: false` prevents schema data loss, ensuring deterministic payout structures. 
-
----
-
-## 🤝 Contribution & License
-
-**Author:** [Parth Shah](https://github.com/ParthDevOp)
-
-Contributions to improve optimizations, microservices extraction, or UI polish are welcome! Please branch from `main` and execute a Pull Request.
-
-**License:** MIT License
-
-*Prepared and built for performance, scale, and enterprise-level logistics workflows.*
+> **Built with passion by Parth.** 
+> Feel free to contact me or submit an issue if you have suggestions!

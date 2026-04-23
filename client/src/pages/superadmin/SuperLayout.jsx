@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 const SuperLayout = () => {
-    const { axios, navigate, setUser, setRole } = useAppContext();
+    const { axios, navigate, setUser, setRole, logout } = useAppContext();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
 
@@ -17,16 +17,6 @@ const SuperLayout = () => {
         setIsMobileMenuOpen(false);
     }, [location]);
 
-    const logout = async () => {
-        try {
-            await axios.post('/api/user/logout');
-            setUser(null); 
-            setRole('user'); 
-            navigate('/home');
-        } catch (error) {
-            console.error("Logout failed", error);
-        }
-    };
 
     // 🟢 Merged Links (Combining your Layout & Sidebar needs)
     const links = [

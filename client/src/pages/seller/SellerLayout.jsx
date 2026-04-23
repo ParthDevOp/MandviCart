@@ -15,7 +15,7 @@ import Lottie from 'lottie-react';
 import sellerLoaderAnimation from '../../assets/seller-loader.json';
 
 const SellerLayout = () => {
-  const { user, setUser, navigate, axios } = useAppContext();
+  const { user, setUser, navigate, axios, logout } = useAppContext();
   const { signOut } = useClerk(); 
   const { user: clerkUser } = useUser(); 
   
@@ -79,16 +79,7 @@ const SellerLayout = () => {
       }
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(); 
-      setUser(null); 
-      navigate('/');
-      toast.success("Successfully logged out");
-    } catch (error) {
-      toast.error("Logout failed");
-    }
-  };
+
 
   const sidebarLinks = [
     { name: "Dashboard", path: "/seller", icon: <LayoutDashboard size={20} /> },
@@ -159,7 +150,7 @@ const SellerLayout = () => {
         </div>
         <NavLinks />
         <div className="p-6 border-t border-slate-100 bg-slate-50/50 mt-auto shrink-0">
-            <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all shadow-sm active:scale-95">
+            <button onClick={logout} className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all shadow-sm active:scale-95">
                 <LogOut size={18} /> Secure Logout
             </button>
         </div>
@@ -180,7 +171,7 @@ const SellerLayout = () => {
                     </div>
                     <NavLinks mobile={true} />
                     <div className="p-6 border-t border-slate-100 bg-slate-50 mt-auto">
-                        <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-bold text-red-600 bg-white border border-red-100 hover:bg-red-50 rounded-lg transition-all shadow-sm">
+                        <button onClick={logout} className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-bold text-red-600 bg-white border border-red-100 hover:bg-red-50 rounded-lg transition-all shadow-sm">
                             <LogOut size={18} /> Logout
                         </button>
                     </div>

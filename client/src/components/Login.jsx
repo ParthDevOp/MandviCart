@@ -34,7 +34,6 @@ const clerkAppearance = {
 };
 
 const demoAccounts = [
-    { role: 'Super Admin', email: 'super@test.com', pass: 'MandviSuper!2026' },
     { role: 'Admin', email: 'admin@test.com', pass: 'MandviAdmin!2026' },
     { role: 'Seller', email: 'seller@test.com', pass: 'MandviSeller!2026' },
     { role: 'Rider', email: 'rider@test.com', pass: 'MandviRider!2026' },
